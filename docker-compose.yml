@@ -1,3 +1,9 @@
+# Vetrix Validation Webapp — Docker Compose configuration
+# Volumes:
+#   - episodes/ is mounted read-only (episode data does not change at runtime)
+#   - data/ is mounted read-write (submissions.json is written here)
+# Set ADMIN_PASSWORD in .env (see .env.example)
+
 version: "3.8"
 services:
   vetrix-webapp:
@@ -10,5 +16,5 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
       - NODE_ENV=production
     volumes:
-      - ./episodes:/app/episodes:ro
-      - ./data:/app/data
+      - ./episodes:/app/episodes:ro   # Episode data (audio, PDF, transcript)
+      - ./data:/app/data              # Persistent storage (submissions.json)

@@ -1,3 +1,16 @@
+/**
+ * Vetrix Validation Webapp — Express server entry point.
+ *
+ * This webapp is used in a medical research study where anaesthesiologists
+ * evaluate AI-generated podcast episodes on presentation quality, content
+ * accuracy, and clinical relevance. Each episode is evaluated by 5 raters.
+ *
+ * Routes:
+ *   Pages:  / (landing), /evaluate, /complete, /admin
+ *   API:    /api/assign, /api/submit, /api/episode/:code/*
+ *   Admin:  /api/admin/progress, /api/admin/export (Basic Auth protected)
+ */
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -14,7 +27,7 @@ app.use(express.json());
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
 
-// --- Page routes ---
+// --- Page routes (serve static HTML) ---
 
 app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'landing.html'));
@@ -32,7 +45,7 @@ app.get('/admin', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
-// --- Episode file routes ---
+// --- Episode file routes (audio, PDF, transcript) ---
 
 app.get('/api/episode/:code/transcript', (req, res) => {
   const code = req.params.code;
@@ -67,6 +80,11 @@ app.get('/api/episode/:code/article', (req, res) => {
 });
 
 // --- Assignment ---
+// POST /api/assign — assign an available episode to a rater.
+// Uses file locking to prevent race conditions. Algorithm:
+//   1. Filter episodes: <5 assignments AND not yet assigned to this rater
+//   2. Sort by fewest assignments (for even distribution), random on tie
+//   3. Return { episode, title } or { done: true } if none available
 
 app.post('/api/assign', async (req, res) => {
   const { rater, role } = req.body;
@@ -123,6 +141,8 @@ app.post('/api/assign', async (req, res) => {
 });
 
 // --- Submission ---
+// POST /api/submit — validate and persist a completed evaluation.
+// Uses file locking. Checks for duplicate (episode + rater) before saving.
 
 app.post('/api/submit', async (req, res) => {
   const body = req.body;
@@ -137,7 +157,7 @@ app.post('/api/submit', async (req, res) => {
     await withLock(() => {
       const data = read();
 
-      // Check for duplicate submission
+      // Prevent duplicate submissions for the same episode + rater combination
       const duplicate = data.responses.find(
         r => r.episode === body.episode && r.rater === body.rater
       );
@@ -145,7 +165,7 @@ app.post('/api/submit', async (req, res) => {
         throw { status: 409, message: 'U heeft deze aflevering al beoordeeld.' };
       }
 
-      // Build response record
+      // Build response record with sanitized B entries
       const response = {
         episode: body.episode,
         rater: body.rater,
@@ -176,7 +196,7 @@ app.post('/api/submit', async (req, res) => {
   }
 });
 
-// --- Admin middleware ---
+// --- Admin middleware (HTTP Basic Auth) ---
 
 function adminAuth(req, res, next) {
   const auth = req.headers.authorization;
@@ -196,6 +216,7 @@ function adminAuth(req, res, next) {
   next();
 }
 
+// GET /api/admin/progress — return assignment/completion status per episode
 app.get('/api/admin/progress', adminAuth, (_req, res) => {
   const data = read();
   const episodes = getEpisodes();
@@ -219,6 +240,7 @@ app.get('/api/admin/progress', adminAuth, (_req, res) => {
   res.json({ progress, totalCompleted, totalTarget });
 });
 
+// GET /api/admin/export — download all responses as CSV
 app.get('/api/admin/export', adminAuth, (_req, res) => {
   const data = read();
   if (data.responses.length === 0) {
@@ -230,7 +252,7 @@ app.get('/api/admin/export', adminAuth, (_req, res) => {
   res.send(csv);
 });
 
-// --- Start ---
+// --- Server startup ---
 
 const episodeCount = getEpisodes().length;
 if (episodeCount === 0) {
