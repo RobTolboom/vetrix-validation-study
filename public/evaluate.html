@@ -25,12 +25,20 @@
   <h1>Scoreformulier — Kwaliteitsevaluatie AI-gegenereerde Podcast</h1>
   <p>Vul het formulier in de aangegeven volgorde in. Verstuur uw beoordeling na voltooiing.</p>
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <!-- Step indicator inside sticky header so it stays visible while scrolling -->
+  <div class="step-indicator" id="stepIndicator">
+    <div class="step-dot active" data-step="1"><span class="step-num">1</span><span class="step-label">Podcast</span></div>
+    <div class="step-dot" data-step="2"><span class="step-num">2</span><span class="step-label">Presentatie</span></div>
+    <div class="step-dot" data-step="3"><span class="step-num">3</span><span class="step-label">Artikel</span></div>
+    <div class="step-dot" data-step="4"><span class="step-num">4</span><span class="step-label">Accuraatheid</span></div>
+    <div class="step-dot" data-step="5"><span class="step-num">5</span><span class="step-label">Globaal</span></div>
+  </div>
 </div>
 
 <div class="container">
 
   <!-- META INFO (read-only) -->
-  <div class="meta-card">
+  <div class="meta-card fade-in">
     <h2>Identificatie</h2>
     <div class="meta-grid">
       <div class="meta-field">
@@ -53,7 +61,7 @@
   </div>
 
   <!-- AUDIO PLAYER -->
-  <div class="audio-section">
+  <div class="audio-section fade-in" id="step1">
     <h2>Stap 1 — Beluister de podcast</h2>
     <audio controls preload="auto" id="audioPlayer">
       <source id="audioSource" type="audio/mpeg">
@@ -62,7 +70,7 @@
   </div>
 
   <!-- ONDERDEEL A -->
-  <div class="section-card">
+  <div class="section-card fade-in" id="step2">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>Onderdeel A — Presentatiekwaliteit</h2>
       <span class="badge">Stap 2 — direct na beluisteren</span>
@@ -136,7 +144,7 @@
   </div>
 
   <!-- PDF VIEWER -->
-  <div class="pdf-section">
+  <div class="pdf-section fade-in" id="step3">
     <h2>Stap 3 — Lees het bronartikel</h2>
     <iframe id="pdfViewer" title="Bronartikel"></iframe>
     <div class="pdf-fallback">
@@ -145,7 +153,7 @@
   </div>
 
   <!-- ONDERDEEL B -->
-  <div class="section-card">
+  <div class="section-card fade-in" id="step4">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>Onderdeel B — Inhoudelijke Accuraatheid per Paragraaf</h2>
       <span class="badge">Stap 4 — na lezen artikel + transcript</span>
@@ -159,7 +167,7 @@
   </div>
 
   <!-- ONDERDEEL C -->
-  <div class="section-card">
+  <div class="section-card fade-in" id="step5">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>Onderdeel C — Globale Beoordeling</h2>
       <span class="badge">Stap 5 — afsluitend</span>
@@ -201,7 +209,7 @@
   </div>
 
   <!-- SUBMIT -->
-  <div class="submit-area">
+  <div class="submit-area fade-in">
     <div class="score-summary" id="scoreSummary">
       <h3>Scorenoverzicht</h3>
       <div class="summary-grid" id="summaryGrid"></div>
