@@ -1,0 +1,52 @@
+# ---- Python basics ----
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ---- Build artifacts ----
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ---- Virtual environments ----
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+.python-version
+
+# ---- Direnv ----
+.envrc
+.direnv/
+
+# ---- Environment variables ----
+.env
+.env.*
+!.env.example
+
+# ---- Project outputs ----
+out/
+*.log
+
+# ---- Coverage reports ----
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+
+# ---- Jupyter / notebooks ----
+.ipynb_checkpoints/
+*.ipynb
+
+# ---- macOS ----
+.DS_Store
+
+# ---- personal dev notes ----
+aantekeningen.txt
+todo.txt
+test.py
+work-in-progress/test*
+tmp/*
