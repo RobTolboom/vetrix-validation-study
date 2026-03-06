@@ -31,8 +31,13 @@ env.bak/
 !.env.example
 
 # ---- Study data (persisted via Docker volumes) ----
-data/
-episodes/
+data/*
+!data/.gitkeep
+
+episodes/*
+!episodes/EP-*/
+episodes/EP-*/*
+!episodes/EP-*/.gitkeep
 
 # ---- Project outputs ----
 out/
