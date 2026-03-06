@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const { getEpisodes, getTranscript, getEpisodePath } = require('./lib/episodes');
-const { read, writeAtomic, withLock } = require('./lib/submissions');
+const { read, writeAtomic, withLock, getAssignedRaters, cleanupStaleAssignments } = require('./lib/submissions');
 const { validateSubmission } = require('./lib/validation');
 const { responsesToCsv } = require('./lib/csv-export');
 
@@ -92,8 +92,8 @@ app.post('/api/assign', async (req, res) => {
 
       // Find available episodes: <5 assignments AND not assigned to this rater
       const available = episodes.filter(ep => {
-        const assigned = data.assignments[ep] || [];
-        return assigned.length < 5 && !assigned.includes(raterTrimmed);
+        const raters = getAssignedRaters(data.assignments, ep);
+        return raters.length < 5 && !raters.includes(raterTrimmed);
       });
 
       if (available.length === 0) {
@@ -102,13 +102,13 @@ app.post('/api/assign', async (req, res) => {
 
       // Pick episode with fewest assignments (even distribution), random on tie
       available.sort((a, b) => {
-        const diff = (data.assignments[a]?.length || 0) - (data.assignments[b]?.length || 0);
+        const diff = getAssignedRaters(data.assignments, a).length - getAssignedRaters(data.assignments, b).length;
         if (diff !== 0) return diff;
         return Math.random() - 0.5;
       });
 
       const chosen = available[0];
-      data.assignments[chosen].push(raterTrimmed);
+      data.assignments[chosen].push({ rater: raterTrimmed, assigned_at: new Date().toISOString() });
       writeAtomic(data);
 
       const { title } = getTranscript(chosen);
@@ -200,16 +200,16 @@ app.get('/api/admin/progress', adminAuth, (_req, res) => {
   const data = read();
   const episodes = getEpisodes();
   const progress = episodes.map(ep => {
-    const assigned = data.assignments[ep] || [];
+    const raters = getAssignedRaters(data.assignments, ep);
     const completed = data.responses.filter(r => r.episode === ep);
     let title = ep;
     try { title = getTranscript(ep).title; } catch {}
     return {
       episode: ep,
       title,
-      assigned: assigned.length,
+      assigned: raters.length,
       completed: completed.length,
-      raters: assigned,
+      raters,
     };
   });
 
@@ -241,4 +241,8 @@ app.listen(PORT, () => {
   console.log(`Vetrix Validation Webapp running on port ${PORT}`);
   console.log(`Episodes available: ${episodeCount}`);
   console.log(`Admin password: ${ADMIN_PASSWORD === 'admin' ? '⚠️  Using default (set ADMIN_PASSWORD env var)' : '✓ Custom password set'}`);
+
+  // Cleanup stale assignments (no response after 24h) — run on start and every hour
+  cleanupStaleAssignments();
+  setInterval(() => cleanupStaleAssignments(), 60 * 60 * 1000);
 });

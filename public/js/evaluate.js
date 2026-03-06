@@ -46,11 +46,7 @@ async function initPage() {
   document.getElementById('submitBtn').addEventListener('click', submitEvaluation);
 
   // Warn on leaving with unsaved changes
-  window.addEventListener('beforeunload', (e) => {
-    if (hasAnyInput()) {
-      e.preventDefault();
-    }
-  });
+  window.addEventListener('beforeunload', beforeUnloadHandler);
 
   // Listen for progress updates
   document.addEventListener('change', updateProgress);
@@ -179,6 +175,12 @@ function updateProgress() {
   document.getElementById('progressFill').style.width = pct + '%';
 }
 
+function beforeUnloadHandler(e) {
+  if (hasAnyInput()) {
+    e.preventDefault();
+  }
+}
+
 function hasAnyInput() {
   return !!document.querySelector('input[type="radio"]:checked');
 }
@@ -285,9 +287,9 @@ async function submitEvaluation() {
       return;
     }
 
-    // Success — clear session and redirect
+    // Success — disable leave warning, clear session, redirect
+    window.removeEventListener('beforeunload', beforeUnloadHandler);
     sessionStorage.removeItem('vetrix_assignment');
-    window.removeEventListener('beforeunload', () => {});
     window.location.href = '/complete?rater=' + encodeURIComponent(assignment.rater);
   } catch {
     msgEl.textContent = 'Kan geen verbinding maken met de server.';
