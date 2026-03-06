@@ -125,6 +125,19 @@ body { font-family: Arial, sans-serif; background: #F0F4F8; color: var(--text); 
 .para-status.done { color: var(--green); }
 .para-status.pending { color: var(--muted); }
 
+.nvt-row { display: flex; align-items: center; gap: 10px; }
+.btn-nvt {
+  background: var(--pale); border: 2px solid var(--border); border-radius: 8px;
+  padding: 8px 16px; font-size: 13px; font-weight: bold; cursor: pointer;
+  color: var(--muted); transition: all 0.15s; font-family: Arial, sans-serif;
+}
+.btn-nvt:hover { border-color: var(--mid-blue); color: var(--mid-blue); }
+.btn-nvt.active {
+  border-color: var(--mid-blue); background: var(--light-blue);
+  color: var(--mid-blue); box-shadow: 0 0 0 2px var(--mid-blue);
+}
+.nvt-hint { font-size: 12px; color: var(--muted); font-style: italic; }
+
 .submit-area {
   background: white; border-radius: 10px; padding: 24px; border: 1px solid var(--border);
   box-shadow: 0 1px 4px rgba(0,0,0,0.06); text-align: center;

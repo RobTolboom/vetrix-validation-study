@@ -155,8 +155,9 @@ app.post('/api/submit', async (req, res) => {
         A: body.A,
         B: body.B.map(b => ({
           paragraph: b.paragraph,
-          score: b.score,
+          score: b.nvt ? null : b.score,
           note: b.note || '',
+          ...(b.nvt ? { nvt: true } : {}),
         })),
         C: body.C,
       };
