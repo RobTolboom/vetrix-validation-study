@@ -57,6 +57,9 @@ coverage.xml
 # ---- macOS ----
 .DS_Store
 
+# ---- Internal docs / plans ----
+docs/
+
 # ---- personal dev notes ----
 aantekeningen.txt
 todo.txt
