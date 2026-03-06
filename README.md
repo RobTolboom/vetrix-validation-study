@@ -1,14 +1,32 @@
 # Vetrix Podcast Validation Webapp
 
-Webapp voor de validatiestudie van AI-gegenereerde anesthesiologie-podcasts. Beoordelaars evalueren podcastafleveringen op presentatiekwaliteit, inhoudelijke accuraatheid en klinische relevantie.
+A web application for the **Vetrix Anesthesiology** validation study. Anaesthesiologists and residents evaluate AI-generated podcast episodes on presentation quality, content accuracy, and clinical relevance.
 
-## Quickstart
+## Study Design
 
-### Lokaal draaien
+- **10 podcast episodes**, each based on a published anaesthesiology article
+- **5 independent raters** per episode (anaesthesiologists or residents)
+- **3-section scoring form**: presentation quality (A), per-paragraph accuracy (B), global assessment (C)
+- All scores use a **5-point Likert scale** with anchored descriptors
+
+## Language
+
+All code comments and documentation are in English. The **user-facing interface** (form labels, instructions, error messages, button text) is entirely in **Dutch**, as the study targets Dutch-speaking anaesthesiologists and residents.
+
+## Tech Stack
+
+- **Backend**: Node.js + Express
+- **Frontend**: Plain HTML/CSS/JS (no framework)
+- **Storage**: JSON file (`data/submissions.json`) with file-level locking
+- **Deployment**: Docker on Synology NAS
+
+## Quick Start
+
+### Local Development
 
 ```bash
 npm install
-ADMIN_PASSWORD=geheim node server.js
+ADMIN_PASSWORD=secret node server.js
 ```
 
 Open http://localhost:3000
@@ -16,64 +34,131 @@ Open http://localhost:3000
 ### Docker
 
 ```bash
-# Maak een .env bestand aan
 cp .env.example .env
-# Pas ADMIN_PASSWORD aan in .env
+# Edit .env — set ADMIN_PASSWORD
 
 docker-compose up --build -d
 ```
 
-## Afleveringen toevoegen
+## Adding Episodes
 
-Plaats voor elke aflevering een map in `episodes/`:
+Place each episode in the `episodes/` directory:
 
 ```
 episodes/
   EP-01/
-    audio.mp3          # Podcast audio
-    article.pdf        # Bronartikel
-    transcript.json    # Transcript (zie formaat hieronder)
+    audio.mp3          # Podcast audio file
+    article.pdf        # Source article (PDF)
+    transcript.json    # Podcast transcript (see format below)
   EP-02/
     ...
 ```
 
-Alleen mappen met alle drie bestanden worden aangeboden. De app ontdekt afleveringen automatisch bij het opstarten.
+Only directories matching `EP-XX` with all three files present are served. The app discovers episodes automatically at startup.
 
-### transcript.json formaat
+### transcript.json Format
 
 ```json
 {
   "metadata": {
-    "title": "Titel van de aflevering"
+    "title": "Episode Title"
   },
-  "transcript": "Eerste paragraaf.\n\nTweede paragraaf.\n\nDerde paragraaf."
+  "transcript": "First paragraph.\n\nSecond paragraph.\n\nThird paragraph."
 }
 ```
 
-Paragrafen worden gesplitst op `\n\n`. Overige velden (tts_config, ssml_hints, etc.) worden genegeerd.
+Paragraphs are split on double newlines (`\n\n`). Other fields in the JSON (e.g. `tts_config`, `ssml_hints`) are ignored.
 
-## Gebruik
+## User Flow
 
-### Beoordelaars
-1. Open de webapp en voer uw beoordelaarscode in
-2. Een beschikbare aflevering wordt automatisch toegewezen
-3. Beluister de podcast, lees het artikel, vul het scoreformulier in
-4. Verstuur de beoordeling
+### Raters
 
-Elke aflevering wordt door maximaal 5 beoordelaars geëvalueerd.
+1. Open the webapp and enter your rater code + role
+2. An available episode is automatically assigned
+3. **Step 1**: Listen to the podcast
+4. **Step 2**: Score Section A (presentation quality) — before reading the article
+5. **Step 3**: Read the source article (embedded PDF)
+6. **Step 4**: Score Section B (per-paragraph accuracy) — after reading the article
+7. **Step 5**: Score Section C (global assessment)
+8. Submit the evaluation
 
-### Admin
-Ga naar `/admin` en log in met het ingestelde wachtwoord. Het dashboard toont:
-- Voortgang per aflevering (aantal beoordelingen)
-- Download van alle resultaten als CSV
+Each episode is assigned to a maximum of 5 raters. Episodes are distributed evenly (fewest-first algorithm).
 
-## Omgevingsvariabelen
+### Admin Dashboard
 
-| Variabele | Standaard | Beschrijving |
-|-----------|-----------|--------------|
-| `PORT` | `3000` | Server poort |
-| `ADMIN_PASSWORD` | `admin` | Wachtwoord voor het admin dashboard |
+Navigate to `/admin` and log in with the configured password. The dashboard shows:
 
-## Data
+- Progress per episode (assigned / completed counts)
+- Rater codes per episode
+- CSV export of all responses
 
-Beoordelingen worden opgeslagen in `data/submissions.json`. Dit bestand wordt automatisch aangemaakt. Bij gebruik van Docker wordt de `data/` map als volume gemount zodat gegevens behouden blijven bij een rebuild.
+## Architecture
+
+```
+Webapp/
+├── server.js              # Express app (routes, assignment logic, admin API)
+├── lib/
+│   ├── episodes.js        # Episode discovery and transcript parsing
+│   ├── submissions.js     # JSON file storage with atomic writes and locking
+│   ├── validation.js      # Server-side form validation
+│   └── csv-export.js      # Responses → CSV conversion
+├── public/
+│   ├── landing.html       # Rater login page
+│   ├── evaluate.html      # Main scoring form
+│   ├── complete.html      # Thank-you / next-episode page
+│   ├── admin.html         # Admin dashboard
+│   ├── css/style.css      # Shared stylesheet
+│   └── js/
+│       ├── landing.js     # Landing page logic
+│       ├── evaluate.js    # Scoring form logic
+│       └── admin.js       # Admin dashboard logic
+├── episodes/              # Episode data (Docker: read-only volume)
+│   └── EP-XX/{audio.mp3, article.pdf, transcript.json}
+├── data/                  # Persistent storage (Docker: read-write volume)
+│   └── submissions.json
+├── Dockerfile
+├── docker-compose.yml
+└── .env.example
+```
+
+## API Routes
+
+| Method | Route | Auth | Description |
+|--------|-------|------|-------------|
+| `POST` | `/api/assign` | — | Assign an available episode to a rater |
+| `POST` | `/api/submit` | — | Submit a completed evaluation |
+| `GET` | `/api/episode/:code/transcript` | — | Get parsed transcript paragraphs |
+| `GET` | `/api/episode/:code/audio` | — | Stream podcast audio |
+| `GET` | `/api/episode/:code/article` | — | Serve source article PDF |
+| `GET` | `/api/admin/progress` | Basic Auth | Study progress per episode |
+| `GET` | `/api/admin/export` | Basic Auth | Download all responses as CSV |
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | Server port |
+| `ADMIN_PASSWORD` | `admin` | Password for the admin dashboard (Basic Auth) |
+
+## Concurrency & Data Safety
+
+- **File locking**: `proper-lockfile` provides a mutex on `submissions.json` during assignment and submission
+- **Atomic writes**: data is written to a `.tmp` file, then renamed (prevents corruption on crash)
+- **Duplicate prevention**: server rejects submissions for the same (episode, rater) pair
+- **Stale cleanup**: assignments without a response after 24 hours are automatically removed (runs hourly)
+
+## Scoring Instrument
+
+### Section A — Presentation Quality (before reading the article)
+- **A1** — Audio clarity
+- **A2** — Structure and flow
+- **A3** — Tone and register
+- **A4** — Engagement factor
+
+### Section B — Content Accuracy (after reading the article)
+- Per-paragraph accuracy score (1-5 Likert)
+- Paragraph 1 may be marked "Not applicable" (intro/hook not from source article)
+
+### Section C — Global Assessment
+- **C1** — Clinical relevance
+- **C2** — Content completeness

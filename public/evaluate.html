@@ -1,3 +1,16 @@
+<!--
+  Evaluation form page — the main scoring interface for raters.
+
+  The page follows a 5-step workflow:
+    Step 1: Listen to the podcast (audio player)
+    Step 2: Section A — Presentation quality (A1-A4, Likert 1-5)
+    Step 3: Read the source article (embedded PDF viewer)
+    Step 4: Section B — Per-paragraph content accuracy (dynamic, from transcript)
+    Step 5: Section C — Global assessment (C1-C2, Likert 1-5)
+
+  Assignment data (episode, rater, role) is loaded from sessionStorage
+  by evaluate.js. If no assignment is found, the user is redirected to /.
+-->
 <!DOCTYPE html>
 <html lang="nl">
 <head>

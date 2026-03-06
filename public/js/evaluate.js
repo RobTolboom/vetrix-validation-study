@@ -1,9 +1,28 @@
+/**
+ * Evaluation form script — the main scoring interface.
+ *
+ * This page loads the assignment from sessionStorage (set by the landing page),
+ * fetches the transcript from the API, and renders the scoring form with:
+ *   - Section A: Presentation quality (A1-A4, 5-point Likert scale)
+ *   - Section B: Per-paragraph content accuracy (dynamic, from transcript)
+ *   - Section C: Global assessment (C1-C2, 5-point Likert scale)
+ *
+ * Special features:
+ *   - Paragraph 1 has a "Not applicable" button (intro/hook not from source)
+ *   - Progress bar tracks completion across all sections
+ *   - beforeunload warning prevents accidental page close with unsaved data
+ *   - Score summary shown before final submission
+ */
+
+/** Current assignment data from sessionStorage: { episode, title, rater, role } */
 let assignment = null;
+/** Array of transcript paragraphs: [{ id, text }, ...] */
 let paragraphs = [];
+/** Set of paragraph IDs marked as "Not applicable" */
 const nvtParagraphs = new Set();
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Load assignment from sessionStorage
+  // Load assignment from sessionStorage (set by landing page after /api/assign)
   const raw = sessionStorage.getItem('vetrix_assignment');
   if (!raw) {
     window.location.href = '/';
@@ -14,24 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
   initPage();
 });
 
+/** Initialize the evaluation page: fill meta fields, load media, fetch transcript. */
 async function initPage() {
-  // Fill meta fields
+  // Fill read-only identification fields
   document.getElementById('meta_episode').value = assignment.episode + ' — ' + assignment.title;
   document.getElementById('meta_rater').value = assignment.rater;
   document.getElementById('meta_role').value = assignment.role;
   document.getElementById('meta_date').value = new Date().toISOString().split('T')[0];
 
-  // Set audio source
+  // Set audio source for the podcast player
   const audioSource = document.getElementById('audioSource');
   audioSource.src = '/api/episode/' + assignment.episode + '/audio';
   document.getElementById('audioPlayer').load();
 
-  // Set PDF source
+  // Set PDF source for the embedded article viewer
   const pdfUrl = '/api/episode/' + assignment.episode + '/article';
   document.getElementById('pdfViewer').src = pdfUrl;
   document.getElementById('pdfLink').href = pdfUrl;
 
-  // Load transcript paragraphs
+  // Fetch transcript and render paragraph scoring blocks
   try {
     const res = await fetch('/api/episode/' + assignment.episode + '/transcript');
     const data = await res.json();
@@ -42,16 +62,21 @@ async function initPage() {
       '<p style="color:var(--red);">Kan transcript niet laden.</p>';
   }
 
-  // Bind submit
   document.getElementById('submitBtn').addEventListener('click', submitEvaluation);
 
-  // Warn on leaving with unsaved changes
+  // Warn before navigating away with unsaved input (stored as named function for removal)
   window.addEventListener('beforeunload', beforeUnloadHandler);
 
-  // Listen for progress updates
+  // Update progress bar on any radio/select change
   document.addEventListener('change', updateProgress);
 }
 
+/**
+ * Render paragraph scoring blocks in Section B.
+ * Each paragraph gets a collapsible block with the transcript text,
+ * a 5-point Likert scale, an optional note field, and (for paragraph 1 only)
+ * a "Not applicable" button.
+ */
 function renderParagraphs() {
   const container = document.getElementById('paragraphs-container');
   container.innerHTML = '';
@@ -108,24 +133,28 @@ function renderParagraphs() {
   updateProgress();
 }
 
+/** Safely escape text for insertion into innerHTML. */
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
+/** Toggle collapse/expand of a section card (A, B, or C). */
 function toggleSection(header) {
   header.classList.toggle('collapsed');
   header.nextElementSibling.classList.toggle('hidden');
 }
 
+/** Toggle visibility of a paragraph's scoring body. */
 function togglePara(id) {
   const body = document.getElementById('para_body_' + id);
   body.style.display = body.style.display === 'none' ? 'block' : 'none';
 }
 
+/** Update paragraph status badge when a Likert score is selected. Clears N/A state. */
 function updateParaStatus(id) {
-  // If a Likert score is selected, clear n.v.t. state
+  // If a Likert score is selected, clear N/A state
   nvtParagraphs.delete(id);
   const nvtBtn = document.getElementById('B' + id + '_nvt');
   if (nvtBtn) nvtBtn.classList.remove('active');
@@ -139,6 +168,10 @@ function updateParaStatus(id) {
   updateProgress();
 }
 
+/**
+ * Toggle "Not applicable" state for a paragraph (paragraph 1 only).
+ * When active, clears any Likert selection and sets status to "N.v.t."
+ */
 function toggleNvt(id) {
   const isActive = nvtParagraphs.has(id);
   const btn = document.getElementById('B' + id + '_nvt');
@@ -162,6 +195,7 @@ function toggleNvt(id) {
   updateProgress();
 }
 
+/** Update the progress bar based on how many required scores are filled in. */
 function updateProgress() {
   const required = ['A1', 'A2', 'A3', 'A4', 'C1', 'C2'];
   let filled = required.filter(n => document.querySelector('input[name="' + n + '"]:checked')).length;
@@ -175,16 +209,19 @@ function updateProgress() {
   document.getElementById('progressFill').style.width = pct + '%';
 }
 
+/** Named beforeunload handler — stored as reference so it can be removed on submit. */
 function beforeUnloadHandler(e) {
   if (hasAnyInput()) {
     e.preventDefault();
   }
 }
 
+/** Check if the user has made any selections (for beforeunload warning). */
 function hasAnyInput() {
   return !!document.querySelector('input[type="radio"]:checked');
 }
 
+/** Collect all form data into a structured object for submission to /api/submit. */
 function gatherData() {
   const data = {
     episode: assignment.episode,
@@ -226,6 +263,7 @@ function gatherData() {
   return data;
 }
 
+/** Client-side validation: all A/C scores required, all B paragraphs scored or N/A. */
 function validate(data) {
   const aOk = ['A1', 'A2', 'A3', 'A4'].every(k => data.A[k].score !== null);
   const cOk = ['C1', 'C2'].every(k => data.C[k].score !== null);
@@ -233,6 +271,7 @@ function validate(data) {
   return aOk && cOk && bOk;
 }
 
+/** Display a score summary grid before final submission. Shows A scores, B mean, C scores. */
 function showSummary(data) {
   const grid = document.getElementById('summaryGrid');
   const summary = document.getElementById('scoreSummary');
@@ -252,6 +291,10 @@ function showSummary(data) {
   summary.style.display = 'block';
 }
 
+/**
+ * Submit the evaluation: validate, show summary, POST to /api/submit.
+ * On success: remove beforeunload handler, clear sessionStorage, redirect to /complete.
+ */
 async function submitEvaluation() {
   const data = gatherData();
   const msgEl = document.getElementById('validationMsg');
