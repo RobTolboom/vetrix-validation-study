@@ -754,83 +754,188 @@ body {
 }
 
 /* --- 13b. Consent page --- */
+
+/* Reading progress bar (thin line below sticky header) */
+.reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 3px;
+  background: linear-gradient(90deg, #64B5F6, #90CAF9, #BBDEFB);
+  z-index: 200;
+  transition: width 0.15s linear;
+  box-shadow: 0 0 8px rgba(100,181,246,0.4);
+}
+
 .consent-document {
   background: white;
   border-radius: var(--radius-lg);
-  padding: 36px 40px;
-  margin-bottom: 28px;
+  padding: 44px 48px;
+  margin-bottom: 32px;
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-sm);
+  position: relative;
+}
+/* Decorative left accent line on the document */
+.consent-document::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 24px;
+  bottom: 24px;
+  width: 3px;
+  background: linear-gradient(180deg, var(--navy), var(--blue), transparent);
+  border-radius: 0 3px 3px 0;
 }
 .consent-doc-header {
   text-align: center;
-  margin-bottom: 28px;
-  padding-bottom: 22px;
+  margin-bottom: 32px;
+  padding-bottom: 26px;
   border-bottom: 2px solid var(--navy);
+  position: relative;
+}
+/* Small decorative diamond on the header border */
+.consent-doc-header::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  background: var(--navy);
 }
 .consent-doc-header h2 {
   font-family: 'DM Serif Display', Georgia, serif;
   color: var(--navy);
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 400;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
 }
 .consent-doc-subtitle {
   font-size: 13px;
   color: var(--muted);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 .consent-notice {
-  background: var(--ice);
+  background: linear-gradient(135deg, var(--ice) 0%, var(--ice-warm) 100%);
   border-left: 3px solid var(--blue);
-  border-radius: 0 8px 8px 0;
-  padding: 14px 18px;
-  margin-bottom: 28px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 16px 20px;
+  margin-bottom: 32px;
   font-size: 13px;
   color: var(--navy);
   font-style: italic;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 .consent-section {
-  margin-bottom: 24px;
-  padding-bottom: 20px;
+  margin-bottom: 4px;
+  padding: 22px 0;
   border-bottom: 1px solid var(--border-light);
+  opacity: 0;
+  transform: translateY(12px);
+  animation: consentReveal 0.5s var(--ease) forwards;
 }
-.consent-section:last-child { border-bottom: none; padding-bottom: 0; }
+.consent-section:nth-child(3) { animation-delay: 0.04s; }
+.consent-section:nth-child(4) { animation-delay: 0.06s; }
+.consent-section:nth-child(5) { animation-delay: 0.08s; }
+.consent-section:nth-child(6) { animation-delay: 0.1s; }
+.consent-section:nth-child(7) { animation-delay: 0.12s; }
+.consent-section:nth-child(8) { animation-delay: 0.14s; }
+.consent-section:nth-child(9) { animation-delay: 0.16s; }
+.consent-section:nth-child(10) { animation-delay: 0.18s; }
+.consent-section:nth-child(11) { animation-delay: 0.2s; }
+.consent-section:nth-child(12) { animation-delay: 0.22s; }
+@keyframes consentReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+.consent-section:last-child { border-bottom: none; }
 .consent-section h3 {
   font-family: 'DM Serif Display', Georgia, serif;
   color: var(--navy);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 400;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* Styled section number badge */
+.consent-section h3 .section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: white;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(28,43,58,0.15);
 }
 .consent-section p {
   font-size: 14px;
   color: var(--text);
   margin-bottom: 10px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 .consent-section p:last-child { margin-bottom: 0; }
 .consent-section ul, .consent-section ol {
-  margin: 10px 0 10px 22px;
+  margin: 12px 0 12px 20px;
   font-size: 14px;
   color: var(--text);
-  line-height: 1.7;
+  line-height: 1.75;
 }
-.consent-section li { margin-bottom: 6px; }
+.consent-section ul { list-style: none; }
+.consent-section ul li {
+  position: relative;
+  padding-left: 16px;
+  margin-bottom: 8px;
+}
+/* Custom bullet: small navy dot */
+.consent-section ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+.consent-section ol li {
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+.consent-section ol li::marker {
+  color: var(--blue);
+  font-weight: 700;
+}
 .contact-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 12px;
+  margin-top: 14px;
+  background: var(--ice-warm);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 .contact-table td {
-  padding: 6px 12px;
+  padding: 10px 16px;
   font-size: 14px;
   color: var(--text);
   border-bottom: 1px solid var(--border-light);
   vertical-align: top;
 }
-.contact-table td:first-child { width: 140px; }
+.contact-table tr:last-child td { border-bottom: none; }
+.contact-table td:first-child {
+  width: 140px;
+  background: rgba(28,43,58,0.03);
+}
 
 /* Consent form card */
 .consent-form-card {
@@ -838,9 +943,21 @@ body {
   margin: 0 auto 40px;
   background: white;
   border-radius: var(--radius-xl);
-  padding: 40px;
+  padding: 44px 40px;
   border: 1px solid var(--border-light);
   box-shadow: var(--shadow-lg);
+  position: relative;
+}
+/* Top accent bar on consent form */
+.consent-form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 32px;
+  right: 32px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--navy), var(--blue));
+  border-radius: 0 0 3px 3px;
 }
 .consent-form-card h2 {
   font-family: 'DM Serif Display', Georgia, serif;
@@ -854,18 +971,22 @@ body {
   font-size: 13px;
   color: var(--muted);
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .consent-form-intro {
   font-size: 14px;
   color: var(--text);
-  line-height: 1.7;
-  margin-bottom: 20px;
+  line-height: 1.75;
+  margin-bottom: 24px;
+  background: var(--ice-warm);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
 }
 .consent-agree-label {
   font-size: 14px;
   color: var(--navy);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 /* Consent checkboxes */
@@ -873,51 +994,72 @@ body {
 .consent-checkbox {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 14px;
+  padding: 14px 16px;
   border: 1.5px solid var(--border-light);
   border-radius: var(--radius);
   margin-bottom: 8px;
   cursor: pointer;
-  transition: all 0.2s var(--ease);
+  transition: all 0.25s var(--ease);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--text);
 }
 .consent-checkbox:hover {
   border-color: var(--blue-soft);
   background: var(--ice-warm);
+  transform: translateX(3px);
 }
 .consent-checkbox input[type="checkbox"] { display: none; }
 .consent-checkbox .checkmark {
   flex-shrink: 0;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border: 2px solid var(--border);
-  border-radius: 5px;
-  margin-top: 1px;
+  border-radius: 6px;
+  margin-top: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s var(--ease);
+  transition: all 0.25s var(--ease);
   background: white;
+  position: relative;
 }
 .consent-checkbox .checkmark::after {
   content: '';
   width: 6px;
-  height: 10px;
+  height: 11px;
   border: solid white;
   border-width: 0 2.5px 2.5px 0;
   transform: rotate(45deg) scale(0);
-  transition: transform 0.2s var(--ease-spring);
+  transition: transform 0.25s var(--ease-spring);
 }
 .consent-checkbox input:checked ~ .checkmark {
-  background: var(--blue);
-  border-color: var(--blue);
-  box-shadow: 0 2px 6px rgba(42,108,176,0.25);
+  background: var(--score-5);
+  border-color: var(--score-5);
+  box-shadow: 0 2px 8px rgba(37,121,74,0.3);
+  transform: scale(1.1);
 }
 .consent-checkbox input:checked ~ .checkmark::after {
   transform: rotate(45deg) scale(1);
+}
+/* Checked checkbox row gets subtle green tint */
+.consent-checkbox:has(input:checked) {
+  border-color: rgba(37,121,74,0.2);
+  background: var(--score-5-bg);
+}
+/* Counter badge showing how many checked */
+.consent-counter {
+  text-align: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  transition: color 0.3s var(--ease);
+}
+.consent-counter.all-checked {
+  color: var(--score-5);
 }
 
 /* Consent form fields */
@@ -925,7 +1067,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 .consent-fields .form-group { text-align: left; margin-bottom: 0; }
 .consent-fields .form-group:first-child { grid-column: 1 / -1; }
@@ -970,7 +1112,7 @@ body {
 }
 .consent-back-link {
   text-align: center;
-  margin-top: 16px;
+  margin-top: 18px;
   font-size: 13px;
 }
 .consent-back-link a {
@@ -1030,41 +1172,58 @@ body {
 
 /* --- 13d. Credentials card (registration success) --- */
 .credentials-card {
-  background: var(--ice);
-  border: 2px solid var(--blue);
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
   border-radius: var(--radius-lg);
-  padding: 24px 28px;
-  margin: 24px auto;
-  max-width: 320px;
+  padding: 28px 32px;
+  margin: 28px auto;
+  max-width: 340px;
+  box-shadow: 0 8px 28px rgba(28,43,58,0.2);
+  position: relative;
+  overflow: hidden;
+}
+/* Subtle noise overlay matching header */
+.credentials-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
 }
 .credential-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 14px 0;
+  position: relative;
+  z-index: 1;
 }
 .credential-row + .credential-row {
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid rgba(255,255,255,0.12);
 }
 .credential-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  color: var(--muted);
+  color: rgba(255,255,255,0.55);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 .credential-value {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 700;
-  color: var(--navy);
-  font-family: 'Plus Jakarta Sans', monospace;
-  letter-spacing: 0.05em;
+  color: white;
+  font-family: 'DM Serif Display', Georgia, serif;
+  letter-spacing: 0.06em;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 .credentials-hint {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   line-height: 1.6;
+  background: var(--ice-warm);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border-left: 3px solid var(--blue);
 }
 
 /* --- 14. Admin dashboard --- */
@@ -1197,7 +1356,11 @@ body {
   .step-dot .step-label { display: none; }
   .step-dot .step-num { width: 18px; height: 18px; font-size: 9px; }
   .consent-document { padding: 24px 20px; }
-  .consent-form-card { padding: 28px 20px; }
+  .consent-document::before { display: none; }
+  .consent-form-card { padding: 28px 20px; margin-left: 14px; margin-right: 14px; }
   .consent-fields { grid-template-columns: 1fr; }
   .consent-doc-header h2 { font-size: 18px; }
+  .consent-section h3 .section-num { width: 26px; height: 26px; font-size: 11px; }
+  .consent-checkbox:hover { transform: none; }
+  .credentials-card { padding: 22px 24px; margin-left: 14px; margin-right: 14px; }
 }

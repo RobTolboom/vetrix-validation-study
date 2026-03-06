@@ -21,7 +21,7 @@
     </svg>
   </div>
   <h2>Registratie voltooid!</h2>
-  <p>Bedankt voor uw aanmelding. Bewaar onderstaande gegevens goed — u heeft deze nodig om in te loggen.</p>
+  <p id="welcomeMsg">Bedankt voor uw aanmelding. Bewaar onderstaande gegevens goed — u heeft deze nodig om in te loggen.</p>
 
   <div class="credentials-card" id="credentials">
     <div class="credential-row">
@@ -50,6 +50,13 @@
     const reg = JSON.parse(raw);
     document.getElementById('raterCode').textContent = reg.code;
     document.getElementById('raterPassword').textContent = reg.password;
+
+    // Personalize the welcome message
+    if (reg.name) {
+      const firstName = reg.name.split(' ')[0];
+      document.getElementById('welcomeMsg').textContent =
+        'Bedankt, ' + firstName + '. Bewaar onderstaande gegevens goed \u2014 u heeft deze nodig om in te loggen.';
+    }
 
     document.getElementById('loginBtn').addEventListener('click', () => {
       sessionStorage.removeItem('vetrix_registration');
