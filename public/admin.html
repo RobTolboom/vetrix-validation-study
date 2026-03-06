@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vetrix — Admin Dashboard</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Admin Dashboard</h1>
+  <p>Voortgang validatiestudie — Vetrix Anesthesiology</p>
+  <div class="progress-bar"><div class="progress-fill" id="totalProgress"></div></div>
+</div>
+
+<div class="container">
+  <div class="meta-card">
+    <h2>Overzicht</h2>
+    <p id="totalText" style="font-size:14px;color:var(--muted);margin-bottom:16px;">Laden...</p>
+    <table class="admin-table" id="progressTable">
+      <thead>
+        <tr>
+          <th>Aflevering</th>
+          <th>Titel</th>
+          <th>Toegewezen</th>
+          <th>Voltooid</th>
+          <th>Beoordelaars</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="submit-area" style="margin-top:24px;">
+    <button class="btn-primary" id="exportBtn">Download CSV</button>
+  </div>
+</div>
+
+<script src="/js/admin.js"></script>
+</body>
+</html>

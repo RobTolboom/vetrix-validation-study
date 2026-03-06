@@ -1,0 +1,26 @@
+{
+  "name": "vetrix-validation-webapp",
+  "version": "1.0.0",
+  "description": "Webapp for the Vetrix podcast validation study",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RobTolboom/vetrix-validation-study.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/RobTolboom/vetrix-validation-study/issues"
+  },
+  "homepage": "https://github.com/RobTolboom/vetrix-validation-study#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "proper-lockfile": "^4.1.2"
+  }
+}

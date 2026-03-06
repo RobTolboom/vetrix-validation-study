@@ -1,3 +1,7 @@
+# ---- Node.js ----
+node_modules/
+npm-debug.log*
+
 # ---- Python basics ----
 __pycache__/
 *.py[cod]
@@ -25,6 +29,15 @@ env.bak/
 .env
 .env.*
 !.env.example
+
+# ---- Study data (persisted via Docker volumes) ----
+data/*
+!data/.gitkeep
+
+episodes/*
+!episodes/EP-*/
+episodes/EP-*/*
+!episodes/EP-*/.gitkeep
 
 # ---- Project outputs ----
 out/
