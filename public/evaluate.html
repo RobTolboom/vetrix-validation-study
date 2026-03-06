@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scoreformulier — Podcast Evaluatie</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Scoreformulier — Kwaliteitsevaluatie AI-gegenereerde Podcast</h1>
+  <p>Vul het formulier in de aangegeven volgorde in. Verstuur uw beoordeling na voltooiing.</p>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="container">
+
+  <!-- META INFO (read-only) -->
+  <div class="meta-card">
+    <h2>Identificatie</h2>
+    <div class="meta-grid">
+      <div class="meta-field">
+        <label>Aflevering</label>
+        <input type="text" id="meta_episode" readonly>
+      </div>
+      <div class="meta-field">
+        <label>Beoordelaarscode</label>
+        <input type="text" id="meta_rater" readonly>
+      </div>
+      <div class="meta-field">
+        <label>Functie</label>
+        <input type="text" id="meta_role" readonly>
+      </div>
+      <div class="meta-field">
+        <label>Datum</label>
+        <input type="text" id="meta_date" readonly>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUDIO PLAYER -->
+  <div class="audio-section">
+    <h2>Stap 1 — Beluister de podcast</h2>
+    <audio controls preload="auto" id="audioPlayer">
+      <source id="audioSource" type="audio/mpeg">
+      Uw browser ondersteunt geen audio-element.
+    </audio>
+  </div>
+
+  <!-- ONDERDEEL A -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>Onderdeel A — Presentatiekwaliteit</h2>
+      <span class="badge">Stap 2 — direct na beluisteren</span>
+      <span class="chevron">&#9662;</span>
+    </div>
+    <div class="section-body">
+      <div class="timing-note">Vul dit onderdeel in direct nadat u de podcast heeft beluisterd — voor het lezen van het artikel.</div>
+
+      <!-- A1 -->
+      <div class="criterion">
+        <div class="criterion-label">A1 — Audiohelderheid</div>
+        <div class="criterion-def">Verstaanbaarheid, stemkwaliteit, spraaktempo en akoestische kwaliteit van de opname</div>
+        <div class="likert-row" id="A1">
+          <div class="likert-option" data-score="1"><input type="radio" name="A1" id="A1_1" value="1"><label for="A1_1"><span class="score-num">1</span><span class="score-label">Onvoldoende</span><span class="score-anchor">Frequent onverstaanbaar; ernstig verstoord</span></label></div>
+          <div class="likert-option" data-score="2"><input type="radio" name="A1" id="A1_2" value="2"><label for="A1_2"><span class="score-num">2</span><span class="score-label">Matig</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="3"><input type="radio" name="A1" id="A1_3" value="3"><label for="A1_3"><span class="score-num">3</span><span class="score-label">Voldoende</span><span class="score-anchor">Verstaanbaar; incidentele verstoringen</span></label></div>
+          <div class="likert-option" data-score="4"><input type="radio" name="A1" id="A1_4" value="4"><label for="A1_4"><span class="score-num">4</span><span class="score-label">Goed</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="5"><input type="radio" name="A1" id="A1_5" value="5"><label for="A1_5"><span class="score-num">5</span><span class="score-label">Uitstekend</span><span class="score-anchor">Helder, professioneel, optimaal tempo</span></label></div>
+        </div>
+        <div class="note-field"><label>Toelichting (optioneel)</label><textarea id="A1_note" placeholder="Eventuele opmerkingen..."></textarea></div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- A2 -->
+      <div class="criterion">
+        <div class="criterion-label">A2 — Structuur en flow</div>
+        <div class="criterion-def">Logische opbouw, heldere transities en samenhang tussen onderdelen</div>
+        <div class="likert-row" id="A2">
+          <div class="likert-option" data-score="1"><input type="radio" name="A2" id="A2_1" value="1"><label for="A2_1"><span class="score-num">1</span><span class="score-label">Onvoldoende</span><span class="score-anchor">Geen opbouw; luisteraar raakt draad kwijt</span></label></div>
+          <div class="likert-option" data-score="2"><input type="radio" name="A2" id="A2_2" value="2"><label for="A2_2"><span class="score-num">2</span><span class="score-label">Matig</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="3"><input type="radio" name="A2" id="A2_3" value="3"><label for="A2_3"><span class="score-num">3</span><span class="score-label">Voldoende</span><span class="score-anchor">Begin/midden/einde aanwezig; transities soms abrupt</span></label></div>
+          <div class="likert-option" data-score="4"><input type="radio" name="A2" id="A2_4" value="4"><label for="A2_4"><span class="score-num">4</span><span class="score-label">Goed</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="5"><input type="radio" name="A2" id="A2_5" value="5"><label for="A2_5"><span class="score-num">5</span><span class="score-label">Uitstekend</span><span class="score-anchor">Soepele transities; luisteraar moeiteloos geleid</span></label></div>
+        </div>
+        <div class="note-field"><label>Toelichting (optioneel)</label><textarea id="A2_note" placeholder="Eventuele opmerkingen..."></textarea></div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- A3 -->
+      <div class="criterion">
+        <div class="criterion-label">A3 — Toon en register</div>
+        <div class="criterion-def">Geschiktheid van taalgebruik en terminologie voor anesthesiologen en AIOS</div>
+        <div class="likert-row" id="A3">
+          <div class="likert-option" data-score="1"><input type="radio" name="A3" id="A3_1" value="1"><label for="A3_1"><span class="score-num">1</span><span class="score-label">Onvoldoende</span><span class="score-anchor">Duidelijk ongeschikt register; onjuiste terminologie</span></label></div>
+          <div class="likert-option" data-score="2"><input type="radio" name="A3" id="A3_2" value="2"><label for="A3_2"><span class="score-num">2</span><span class="score-label">Matig</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="3"><input type="radio" name="A3" id="A3_3" value="3"><label for="A3_3"><span class="score-num">3</span><span class="score-label">Voldoende</span><span class="score-anchor">Passend; incidentele stijlbreuken</span></label></div>
+          <div class="likert-option" data-score="4"><input type="radio" name="A3" id="A3_4" value="4"><label for="A3_4"><span class="score-num">4</span><span class="score-label">Goed</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="5"><input type="radio" name="A3" id="A3_5" value="5"><label for="A3_5"><span class="score-num">5</span><span class="score-label">Uitstekend</span><span class="score-anchor">Consistent professioneel; terminologie correct & functioneel</span></label></div>
+        </div>
+        <div class="note-field"><label>Toelichting (optioneel)</label><textarea id="A3_note" placeholder="Eventuele opmerkingen..."></textarea></div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- A4 -->
+      <div class="criterion">
+        <div class="criterion-label">A4 — Engagementfactor</div>
+        <div class="criterion-def">Mate waarin de aflevering de luisteraar boeit en motiveert</div>
+        <div class="likert-row" id="A4">
+          <div class="likert-option" data-score="1"><input type="radio" name="A4" id="A4_1" value="1"><label for="A4_1"><span class="score-num">1</span><span class="score-label">Onvoldoende</span><span class="score-anchor">Saai; monotoon zonder variatie</span></label></div>
+          <div class="likert-option" data-score="2"><input type="radio" name="A4" id="A4_2" value="2"><label for="A4_2"><span class="score-num">2</span><span class="score-label">Matig</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="3"><input type="radio" name="A4" id="A4_3" value="3"><label for="A4_3"><span class="score-num">3</span><span class="score-label">Voldoende</span><span class="score-anchor">Redelijk boeiend; aandacht verslapt soms</span></label></div>
+          <div class="likert-option" data-score="4"><input type="radio" name="A4" id="A4_4" value="4"><label for="A4_4"><span class="score-num">4</span><span class="score-label">Goed</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="5"><input type="radio" name="A4" id="A4_5" value="5"><label for="A4_5"><span class="score-num">5</span><span class="score-label">Uitstekend</span><span class="score-anchor">Consistent boeiend; luisteren actief en motiverend</span></label></div>
+        </div>
+        <div class="note-field"><label>Toelichting (optioneel)</label><textarea id="A4_note" placeholder="Eventuele opmerkingen..."></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PDF VIEWER -->
+  <div class="pdf-section">
+    <h2>Stap 3 — Lees het bronartikel</h2>
+    <iframe id="pdfViewer" title="Bronartikel"></iframe>
+    <div class="pdf-fallback">
+      Wordt de PDF niet weergegeven? <a id="pdfLink" target="_blank">Open in nieuw tabblad</a>
+    </div>
+  </div>
+
+  <!-- ONDERDEEL B -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>Onderdeel B — Inhoudelijke Accuraatheid per Paragraaf</h2>
+      <span class="badge">Stap 4 — na lezen artikel + transcript</span>
+      <span class="chevron">&#9662;</span>
+    </div>
+    <div class="section-body">
+      <div class="timing-note">Vul dit onderdeel in nadat u het bronartikel heeft gelezen en het transcript voor u heeft.</div>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">Beoordeel per paragraaf: <em>"De informatie in deze paragraaf is medisch accuraat en consistent met het bronartikel."</em></p>
+      <div id="paragraphs-container"></div>
+    </div>
+  </div>
+
+  <!-- ONDERDEEL C -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>Onderdeel C — Globale Beoordeling</h2>
+      <span class="badge">Stap 5 — afsluitend</span>
+      <span class="chevron">&#9662;</span>
+    </div>
+    <div class="section-body">
+      <div class="timing-note">Vul dit onderdeel als laatste in, na voltooiing van onderdeel A en B.</div>
+
+      <!-- C1 -->
+      <div class="criterion">
+        <div class="criterion-label">C1 — Klinische relevantie</div>
+        <div class="criterion-def">Mate waarin de inhoud nuttig en toepasbaar is voor de dagelijkse praktijk van de doelgroep</div>
+        <div class="likert-row" id="C1">
+          <div class="likert-option" data-score="1"><input type="radio" name="C1" id="C1_1" value="1"><label for="C1_1"><span class="score-num">1</span><span class="score-label">Niet relevant</span><span class="score-anchor">Geen praktische waarde voor de doelgroep</span></label></div>
+          <div class="likert-option" data-score="2"><input type="radio" name="C1" id="C1_2" value="2"><label for="C1_2"><span class="score-num">2</span><span class="score-label">Beperkt</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="3"><input type="radio" name="C1" id="C1_3" value="3"><label for="C1_3"><span class="score-num">3</span><span class="score-label">Redelijk</span><span class="score-anchor">Relevant; klinische toepasbaarheid beperkt uitgewerkt</span></label></div>
+          <div class="likert-option" data-score="4"><input type="radio" name="C1" id="C1_4" value="4"><label for="C1_4"><span class="score-num">4</span><span class="score-label">Relevant</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="5"><input type="radio" name="C1" id="C1_5" value="5"><label for="C1_5"><span class="score-num">5</span><span class="score-label">Zeer relevant</span><span class="score-anchor">Direct klinisch toepasbaar; helpt vertaling naar praktijk</span></label></div>
+        </div>
+        <div class="note-field"><label>Toelichting (optioneel)</label><textarea id="C1_note" placeholder="Eventuele opmerkingen..."></textarea></div>
+      </div>
+
+      <hr class="divider">
+
+      <!-- C2 -->
+      <div class="criterion">
+        <div class="criterion-label">C2 — Inhoudelijke volledigheid</div>
+        <div class="criterion-def">Mate waarin de essentiële punten en conclusies van het bronartikel worden behandeld</div>
+        <div class="likert-row" id="C2">
+          <div class="likert-option" data-score="1"><input type="radio" name="C2" id="C2_1" value="1"><label for="C2_1"><span class="score-num">1</span><span class="score-label">Onvolledig</span><span class="score-anchor">Belangrijke bevindingen ontbreken; vertekend beeld</span></label></div>
+          <div class="likert-option" data-score="2"><input type="radio" name="C2" id="C2_2" value="2"><label for="C2_2"><span class="score-num">2</span><span class="score-label">Beperkt</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="3"><input type="radio" name="C2" id="C2_3" value="3"><label for="C2_3"><span class="score-num">3</span><span class="score-label">Redelijk</span><span class="score-anchor">Hoofdboodschap aanwezig; enkele nuances ontbreken</span></label></div>
+          <div class="likert-option" data-score="4"><input type="radio" name="C2" id="C2_4" value="4"><label for="C2_4"><span class="score-num">4</span><span class="score-label">Grotendeels</span><span class="score-anchor"></span></label></div>
+          <div class="likert-option" data-score="5"><input type="radio" name="C2" id="C2_5" value="5"><label for="C2_5"><span class="score-num">5</span><span class="score-label">Volledig</span><span class="score-anchor">Alle essentiële bevindingen correct weergegeven</span></label></div>
+        </div>
+        <div class="note-field"><label>Toelichting (optioneel)</label><textarea id="C2_note" placeholder="Eventuele opmerkingen..."></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBMIT -->
+  <div class="submit-area">
+    <div class="score-summary" id="scoreSummary">
+      <h3>Scorenoverzicht</h3>
+      <div class="summary-grid" id="summaryGrid"></div>
+    </div>
+    <div class="validation-msg" id="validationMsg">Vul alle verplichte scores in (onderdelen A en C, plus alle paragrafen in onderdeel B).</div>
+    <button class="btn-primary" id="submitBtn">Verstuur beoordeling</button>
+  </div>
+
+</div>
+
+<script src="/js/evaluate.js"></script>
+</body>
+</html>

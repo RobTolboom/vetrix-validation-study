@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  vetrix-webapp:
+    build: .
+    container_name: vetrix-webapp
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - NODE_ENV=production
+    volumes:
+      - ./episodes:/app/episodes:ro
+      - ./data:/app/data
