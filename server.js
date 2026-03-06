@@ -6,8 +6,8 @@
  * accuracy, and clinical relevance. Each episode is evaluated by 5 raters.
  *
  * Routes:
- *   Pages:  / (landing), /evaluate, /complete, /admin
- *   API:    /api/assign, /api/submit, /api/episode/:code/*
+ *   Pages:  / (landing), /consent, /registered, /evaluate, /complete, /admin
+ *   API:    /api/register, /api/assign, /api/submit, /api/episode/:code/*
  *   Admin:  /api/admin/progress, /api/admin/export (Basic Auth protected)
  */
 
@@ -18,6 +18,7 @@ const { getEpisodes, getTranscript, getEpisodePath } = require('./lib/episodes')
 const { read, writeAtomic, withLock, getAssignedRaters, cleanupStaleAssignments } = require('./lib/submissions');
 const { validateSubmission } = require('./lib/validation');
 const { responsesToCsv } = require('./lib/csv-export');
+const { registerParticipant, findParticipant, verifyPassword, derivePassword } = require('./lib/participants');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +32,14 @@ app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
 
 app.get('/', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
+app.get('/consent', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'consent.html'));
+});
+
+app.get('/registered', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'registered.html'));
 });
 
 app.get('/evaluate', (_req, res) => {
@@ -79,24 +88,59 @@ app.get('/api/episode/:code/article', (req, res) => {
   res.sendFile(filePath);
 });
 
+// --- Registration ---
+// POST /api/register — register a new participant with informed consent.
+// Assigns a sequential rater code and derives a password from MD5.
+
+app.post('/api/register', async (req, res) => {
+  const body = req.body;
+
+  try {
+    const result = await withLock(() => {
+      const data = read();
+      return registerParticipant(data, body);
+    });
+
+    res.json(result);
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    console.error('Registration error:', err);
+    res.status(503).json({ error: 'Server is bezet, probeer het opnieuw.' });
+  }
+});
+
 // --- Assignment ---
-// POST /api/assign — assign an available episode to a rater.
+// POST /api/assign — authenticate rater and assign an available episode.
 // Uses file locking to prevent race conditions. Algorithm:
-//   1. Filter episodes: <5 assignments AND not yet assigned to this rater
-//   2. Sort by fewest assignments (for even distribution), random on tie
-//   3. Return { episode, title } or { done: true } if none available
+//   1. Verify rater code exists and password matches
+//   2. Filter episodes: <5 assignments AND not yet assigned to this rater
+//   3. Sort by fewest assignments (for even distribution), random on tie
+//   4. Return { episode, title, role } or { done: true } if none available
 
 app.post('/api/assign', async (req, res) => {
-  const { rater, role } = req.body;
+  const { rater, password } = req.body;
 
   if (!rater || typeof rater !== 'string' || !rater.trim()) {
     return res.status(400).json({ error: 'Beoordelaarscode is verplicht.' });
   }
-  if (!['Anesthesioloog', 'AIOS anesthesiologie'].includes(role)) {
-    return res.status(400).json({ error: 'Selecteer een geldige functie.' });
+  if (!password || typeof password !== 'string' || !password.trim()) {
+    return res.status(400).json({ error: 'Wachtwoord is verplicht.' });
   }
 
   const raterTrimmed = rater.trim();
+
+  // Verify participant exists
+  const participant = findParticipant(raterTrimmed);
+  if (!participant) {
+    return res.status(401).json({ error: 'Onbekende beoordelaarscode. Heeft u zich al aangemeld?' });
+  }
+
+  // Verify password
+  if (!verifyPassword(raterTrimmed, password.trim())) {
+    return res.status(401).json({ error: 'Onjuist wachtwoord.' });
+  }
 
   try {
     const result = await withLock(() => {
@@ -130,7 +174,7 @@ app.post('/api/assign', async (req, res) => {
       writeAtomic(data);
 
       const { title } = getTranscript(chosen);
-      return { episode: chosen, title };
+      return { episode: chosen, title, role: participant.role };
     });
 
     res.json(result);
@@ -216,7 +260,7 @@ function adminAuth(req, res, next) {
   next();
 }
 
-// GET /api/admin/progress — return assignment/completion status per episode
+// GET /api/admin/progress — return assignment/completion status per episode + participants
 app.get('/api/admin/progress', adminAuth, (_req, res) => {
   const data = read();
   const episodes = getEpisodes();
@@ -237,7 +281,17 @@ app.get('/api/admin/progress', adminAuth, (_req, res) => {
   const totalCompleted = data.responses.length;
   const totalTarget = episodes.length * 5;
 
-  res.json({ progress, totalCompleted, totalTarget });
+  // Include participants with derived passwords for admin overview
+  const participants = (data.participants || []).map(p => ({
+    code: p.code,
+    name: p.name,
+    role: p.role,
+    password: derivePassword(p.code),
+    consent_date: p.consent_date,
+    registered_at: p.registered_at,
+  }));
+
+  res.json({ progress, totalCompleted, totalTarget, participants });
 });
 
 // GET /api/admin/export — download all responses as CSV
@@ -262,7 +316,7 @@ if (episodeCount === 0) {
 app.listen(PORT, () => {
   console.log(`Vetrix Validation Webapp running on port ${PORT}`);
   console.log(`Episodes available: ${episodeCount}`);
-  console.log(`Admin password: ${ADMIN_PASSWORD === 'admin' ? '⚠️  Using default (set ADMIN_PASSWORD env var)' : '✓ Custom password set'}`);
+  console.log(`Admin password: ${ADMIN_PASSWORD === 'admin' ? '!! Using default (set ADMIN_PASSWORD env var)' : 'Custom password set'}`);
 
   // Cleanup stale assignments (no response after 24h) — run on start and every hour
   cleanupStaleAssignments();

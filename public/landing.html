@@ -1,4 +1,4 @@
-<!-- Landing page: rater enters their code and role, then receives an episode assignment. -->
+<!-- Landing page: rater logs in with code and password, or registers as new participant. -->
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -24,7 +24,7 @@
     </svg>
   </div>
   <h2>Welkom</h2>
-  <p class="subtitle">Voer uw gegevens in om te beginnen met een beoordeling.</p>
+  <p class="subtitle">Log in met uw beoordelaarscode of meld u aan als nieuwe deelnemer.</p>
 
   <div class="form-group">
     <label for="raterCode">Beoordelaarscode</label>
@@ -32,22 +32,24 @@
   </div>
 
   <div class="form-group">
-    <label for="raterRole">Functie</label>
-    <select id="raterRole">
-      <option value="">— selecteer —</option>
-      <option value="Anesthesioloog">Anesthesioloog</option>
-      <option value="AIOS anesthesiologie">AIOS anesthesiologie</option>
-    </select>
+    <label for="raterPassword">Wachtwoord</label>
+    <input type="password" id="raterPassword" placeholder="3-tekens wachtwoord" autocomplete="off" maxlength="3">
   </div>
 
   <div class="error-msg" id="errorMsg"></div>
 
-  <button class="btn-primary" id="startBtn" style="width:100%;">Start beoordeling</button>
+  <button class="btn-primary" id="loginBtn" style="width:100%;">Inloggen</button>
 
   <div class="done-msg" id="doneMsg">
     <strong>Alle afleveringen zijn beoordeeld.</strong><br>
     Er zijn geen afleveringen meer beschikbaar. Hartelijk dank voor uw deelname!
   </div>
+
+  <div class="landing-divider">
+    <span>of</span>
+  </div>
+
+  <a href="/consent" class="btn-secondary" style="width:100%;display:block;text-align:center;">Aanmelden als nieuwe deelnemer</a>
 </div>
 
 <script src="/js/landing.js"></script>

@@ -1,0 +1,61 @@
+<!-- Registration success page: shows the assigned rater code and password. -->
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vetrix — Registratie voltooid</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Kwaliteitsevaluatie AI-gegenereerde Podcast</h1>
+  <p>Vetrix Anesthesiology — Validatiestudie</p>
+</div>
+
+<div class="complete-card fade-in">
+  <div class="checkmark-circle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+  <h2>Registratie voltooid!</h2>
+  <p>Bedankt voor uw aanmelding. Bewaar onderstaande gegevens goed — u heeft deze nodig om in te loggen.</p>
+
+  <div class="credentials-card" id="credentials">
+    <div class="credential-row">
+      <span class="credential-label">Beoordelaarscode</span>
+      <span class="credential-value" id="raterCode">—</span>
+    </div>
+    <div class="credential-row">
+      <span class="credential-label">Wachtwoord</span>
+      <span class="credential-value" id="raterPassword">—</span>
+    </div>
+  </div>
+
+  <p class="credentials-hint">Noteer deze gegevens of maak een screenshot. U kunt hiermee inloggen op de evaluatiepagina.</p>
+
+  <button class="btn-primary" id="loginBtn" style="width:100%;">Naar inlogpagina</button>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const raw = sessionStorage.getItem('vetrix_registration');
+    if (!raw) {
+      window.location.href = '/';
+      return;
+    }
+
+    const reg = JSON.parse(raw);
+    document.getElementById('raterCode').textContent = reg.code;
+    document.getElementById('raterPassword').textContent = reg.password;
+
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      sessionStorage.removeItem('vetrix_registration');
+      window.location.href = '/?rater=' + encodeURIComponent(reg.code);
+    });
+  });
+</script>
+</body>
+</html>

@@ -71,9 +71,17 @@ Paragraphs are split on double newlines (`\n\n`). Other fields in the JSON (e.g.
 
 ## User Flow
 
-### Raters
+### New Participants (Registration)
 
-1. Open the webapp and enter your rater code + role
+1. Open the webapp and click **"Aanmelden als nieuwe deelnemer"**
+2. Read the informatiebrief (10 sections covering study purpose, procedures, risks, privacy)
+3. Complete the toestemmingsverklaring: check all 5 consent boxes, enter name and role
+4. Receive a **rater code** (e.g. R-01) and **password** (3-character, derived from MD5 hash)
+5. Use these credentials to log in
+
+### Raters (Evaluation)
+
+1. Open the webapp and log in with rater code + password
 2. An available episode is automatically assigned
 3. **Step 1**: Listen to the podcast
 4. **Step 2**: Score Section A (presentation quality) — before reading the article
@@ -88,9 +96,9 @@ Each episode is assigned to a maximum of 5 raters. Episodes are distributed even
 
 Navigate to `/admin` and log in with the configured password. The dashboard shows:
 
-- Progress per episode (assigned / completed counts)
-- Rater codes per episode
-- CSV export of all responses
+- **Participants**: all registered raters with code, name, role, password, and registration date
+- **Progress**: per-episode assignment/completion counts with rater codes
+- **CSV export**: download all responses
 
 ## Architecture
 
@@ -100,16 +108,20 @@ Webapp/
 ├── lib/
 │   ├── episodes.js        # Episode discovery and transcript parsing
 │   ├── submissions.js     # JSON file storage with atomic writes and locking
+│   ├── participants.js    # Participant registration, code generation, password derivation
 │   ├── validation.js      # Server-side form validation
 │   └── csv-export.js      # Responses → CSV conversion
 ├── public/
-│   ├── landing.html       # Rater login page
+│   ├── landing.html       # Rater login page (code + password)
+│   ├── consent.html       # Registration with informed consent
+│   ├── registered.html    # Registration success (shows credentials)
 │   ├── evaluate.html      # Main scoring form
 │   ├── complete.html      # Thank-you / next-episode page
-│   ├── admin.html         # Admin dashboard
+│   ├── admin.html         # Admin dashboard (participants + progress)
 │   ├── css/style.css      # Shared stylesheet
 │   └── js/
-│       ├── landing.js     # Landing page logic
+│       ├── landing.js     # Login logic
+│       ├── consent.js     # Registration + consent logic
 │       ├── evaluate.js    # Scoring form logic
 │       └── admin.js       # Admin dashboard logic
 ├── episodes/              # Episode data (Docker: read-only volume)
@@ -125,12 +137,13 @@ Webapp/
 
 | Method | Route | Auth | Description |
 |--------|-------|------|-------------|
-| `POST` | `/api/assign` | — | Assign an available episode to a rater |
+| `POST` | `/api/register` | — | Register new participant with informed consent |
+| `POST` | `/api/assign` | — | Authenticate rater and assign an available episode |
 | `POST` | `/api/submit` | — | Submit a completed evaluation |
 | `GET` | `/api/episode/:code/transcript` | — | Get parsed transcript paragraphs |
 | `GET` | `/api/episode/:code/audio` | — | Stream podcast audio |
 | `GET` | `/api/episode/:code/article` | — | Serve source article PDF |
-| `GET` | `/api/admin/progress` | Basic Auth | Study progress per episode |
+| `GET` | `/api/admin/progress` | Basic Auth | Participants + study progress per episode |
 | `GET` | `/api/admin/export` | Basic Auth | Download all responses as CSV |
 
 ## Environment Variables
