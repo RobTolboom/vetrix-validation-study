@@ -64,6 +64,20 @@ async function initPage() {
 
   document.getElementById('submitBtn').addEventListener('click', submitEvaluation);
 
+  // Click on step indicator dots scrolls to the corresponding section
+  document.querySelectorAll('.step-dot').forEach(dot => {
+    dot.style.cursor = 'pointer';
+    dot.addEventListener('click', () => {
+      const step = dot.getAttribute('data-step');
+      const target = document.getElementById('step' + step);
+      if (target) {
+        const headerHeight = document.querySelector('.page-header').offsetHeight;
+        const top = target.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+    });
+  });
+
   // Warn before navigating away with unsaved input (stored as named function for removal)
   window.addEventListener('beforeunload', beforeUnloadHandler);
 
@@ -195,7 +209,7 @@ function toggleNvt(id) {
   updateProgress();
 }
 
-/** Update the progress bar based on how many required scores are filled in. */
+/** Update the progress bar and step indicator based on completion state. */
 function updateProgress() {
   const required = ['A1', 'A2', 'A3', 'A4', 'C1', 'C2'];
   let filled = required.filter(n => document.querySelector('input[name="' + n + '"]:checked')).length;
@@ -207,6 +221,44 @@ function updateProgress() {
 
   const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
   document.getElementById('progressFill').style.width = pct + '%';
+
+  // Update step indicator
+  updateStepIndicator();
+}
+
+/** Update the step indicator dots based on section completion. */
+function updateStepIndicator() {
+  const dots = document.querySelectorAll('.step-dot');
+  if (!dots.length) return;
+
+  // Check which sections are complete
+  const aKeys = ['A1', 'A2', 'A3', 'A4'];
+  const cKeys = ['C1', 'C2'];
+  const aComplete = aKeys.every(k => document.querySelector('input[name="' + k + '"]:checked'));
+  const bComplete = paragraphs.length > 0 && paragraphs.every(p =>
+    nvtParagraphs.has(p.id) || document.querySelector('input[name="B' + p.id + '"]:checked')
+  );
+  const cComplete = cKeys.every(k => document.querySelector('input[name="' + k + '"]:checked'));
+
+  // Step completion: [1=audio, 2=A, 3=PDF, 4=B, 5=C]
+  // Audio and PDF are "completed" once the user moves past them (heuristic: A has any input)
+  const aAny = aKeys.some(k => document.querySelector('input[name="' + k + '"]:checked'));
+  const bAny = paragraphs.some(p =>
+    nvtParagraphs.has(p.id) || document.querySelector('input[name="B' + p.id + '"]:checked')
+  );
+
+  const stepStates = [
+    aAny ? 'completed' : 'active',                       // Step 1: Podcast
+    aComplete ? 'completed' : (aAny ? 'active' : ''),    // Step 2: Section A
+    bAny ? 'completed' : (aComplete ? 'active' : ''),    // Step 3: Article
+    bComplete ? 'completed' : (bAny ? 'active' : ''),    // Step 4: Section B
+    cComplete ? 'completed' : (bComplete ? 'active' : ''), // Step 5: Section C
+  ];
+
+  dots.forEach((dot, i) => {
+    dot.classList.remove('active', 'completed');
+    if (stepStates[i]) dot.classList.add(stepStates[i]);
+  });
 }
 
 /** Named beforeunload handler — stored as reference so it can be removed on submit. */
