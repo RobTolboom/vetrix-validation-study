@@ -94,11 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Store credentials for the registered page
+      // Store credentials + participant details for the registered page and print page
       sessionStorage.setItem('vetrix_registration', JSON.stringify({
         code: data.code,
         password: data.password,
         name,
+        role,
+        consent_date: dateInput.value,
       }));
 
       window.location.href = '/registered';

@@ -42,6 +42,10 @@ app.get('/registered', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'registered.html'));
 });
 
+app.get('/consent-print', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'consent-print.html'));
+});
+
 app.get('/evaluate', (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'evaluate.html'));
 });

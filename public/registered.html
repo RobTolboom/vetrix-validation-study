@@ -36,7 +36,8 @@
 
   <p class="credentials-hint">Noteer deze gegevens of maak een screenshot. U kunt hiermee inloggen op de evaluatiepagina.</p>
 
-  <button class="btn-primary" id="loginBtn" style="width:100%;">Naar inlogpagina</button>
+  <button class="btn-primary" id="downloadBtn" style="width:100%;">Download informatiebrief (PDF)</button>
+  <button class="btn-primary" id="loginBtn" style="width:100%;margin-top:8px;">Naar inlogpagina</button>
 </div>
 
 <script>
@@ -57,6 +58,11 @@
       document.getElementById('welcomeMsg').textContent =
         'Bedankt, ' + firstName + '. Bewaar onderstaande gegevens goed \u2014 u heeft deze nodig om in te loggen.';
     }
+
+    // Open print-optimized consent page in a new window
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      window.open('/consent-print', '_blank');
+    });
 
     document.getElementById('loginBtn').addEventListener('click', () => {
       sessionStorage.removeItem('vetrix_registration');
