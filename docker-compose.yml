@@ -12,7 +12,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - NODE_ENV=production
     volumes:
       - ./episodes:/app/episodes:ro   # Episode data (audio, PDF, transcript)
