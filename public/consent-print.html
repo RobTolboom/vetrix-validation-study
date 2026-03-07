@@ -12,8 +12,8 @@
 
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-      font-size: 11pt;
-      line-height: 1.6;
+      font-size: 9.5pt;
+      line-height: 1.5;
       color: #1E2D3D;
       -webkit-font-smoothing: antialiased;
       background: #EDF2F8;
@@ -71,7 +71,7 @@
       max-width: 210mm;
       margin: 80px auto 40px;
       background: white;
-      padding: 40px 44px;
+      padding: 28px 32px;
       box-shadow: 0 4px 24px rgba(28,43,58,0.1);
       border-radius: 4px;
     }
@@ -79,9 +79,9 @@
     /* --- Document header --- */
     .doc-header {
       text-align: center;
-      padding-bottom: 18px;
+      padding-bottom: 12px;
       border-bottom: 2px solid #1C2B3A;
-      margin-bottom: 20px;
+      margin-bottom: 14px;
       position: relative;
     }
     .doc-header::after {
@@ -96,23 +96,23 @@
     }
     .doc-header h1 {
       font-family: 'DM Serif Display', Georgia, serif;
-      font-size: 18pt;
+      font-size: 15pt;
       font-weight: 400;
       color: #1C2B3A;
       margin-bottom: 6px;
     }
     .doc-header .subtitle {
-      font-size: 10pt;
+      font-size: 9pt;
       color: #7A8D9E;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     /* --- WMO notice --- */
     .notice {
       border-left: 3px solid #2A6CB0;
-      padding: 10px 14px;
-      margin-bottom: 22px;
-      font-size: 10pt;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      font-size: 9pt;
       color: #1C2B3A;
       font-style: italic;
       line-height: 1.6;
@@ -121,11 +121,11 @@
 
     /* --- Sections --- */
     .section {
-      margin-bottom: 18px;
+      margin-bottom: 10px;
     }
     .section h2 {
       font-family: 'DM Serif Display', Georgia, serif;
-      font-size: 13pt;
+      font-size: 11pt;
       font-weight: 400;
       color: #1C2B3A;
       margin-bottom: 8px;
@@ -137,36 +137,36 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 24px;
-      height: 24px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       background: #1C2B3A;
       color: white;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 10pt;
+      font-size: 8.5pt;
       font-weight: 700;
       flex-shrink: 0;
     }
     .section p {
-      margin-bottom: 8px;
-      line-height: 1.65;
+      margin-bottom: 5px;
+      line-height: 1.5;
     }
     .section p:last-child { margin-bottom: 0; }
     .section ul, .section ol {
-      margin: 8px 0 8px 20px;
-      line-height: 1.65;
+      margin: 4px 0 4px 18px;
+      line-height: 1.5;
     }
-    .section li { margin-bottom: 4px; }
+    .section li { margin-bottom: 2px; }
 
     /* Contact table */
     .contact-table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 10px;
-      font-size: 10.5pt;
+      font-size: 9pt;
     }
     .contact-table td {
-      padding: 5px 10px;
+      padding: 3px 8px;
       border-bottom: 1px solid #E4EAF0;
       vertical-align: top;
     }
@@ -175,46 +175,38 @@
       font-weight: 700;
     }
 
-    /* --- Page break hint for html2pdf --- */
-    .page-break {
-      page-break-before: always;
-      height: 0;
-      margin: 0;
-      border: none;
-    }
-
     /* --- Consent form --- */
     .consent-intro {
-      font-size: 10.5pt;
-      line-height: 1.65;
-      margin-bottom: 18px;
-      padding: 10px 14px;
+      font-size: 9pt;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      padding: 8px 12px;
       background: #F4F7FA;
       border: 1px solid #E4EAF0;
       border-radius: 6px;
     }
     .consent-agree {
       font-weight: 700;
-      margin-bottom: 12px;
-      font-size: 11pt;
+      margin-bottom: 8px;
+      font-size: 9.5pt;
     }
 
     /* Checkboxes */
-    .checkbox-list { margin-bottom: 18px; }
+    .checkbox-list { margin-bottom: 12px; }
     .checkbox-item {
       display: flex;
       align-items: flex-start;
-      gap: 10px;
-      padding: 8px 0;
+      gap: 8px;
+      padding: 5px 0;
       border-bottom: 1px solid #E4EAF0;
-      font-size: 10.5pt;
-      line-height: 1.55;
+      font-size: 9pt;
+      line-height: 1.45;
     }
     .checkbox-item:last-child { border-bottom: none; }
     .check-box {
       flex-shrink: 0;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       border: 2px solid #25794A;
       border-radius: 3px;
       background: #E5F4EB;
@@ -227,15 +219,15 @@
 
     /* Signature fields */
     .signature-section {
-      margin-top: 24px;
+      margin-top: 16px;
       border-top: 2px solid #1C2B3A;
-      padding-top: 18px;
+      padding-top: 12px;
     }
     .sig-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 14px;
+      gap: 14px;
+      margin-bottom: 10px;
     }
     .sig-field label {
       display: block;
@@ -257,21 +249,21 @@
 
     /* Credentials */
     .credentials-section {
-      margin-top: 32px;
+      margin-top: 20px;
     }
     .credentials-box {
       border: 2px solid #1C2B3A;
       border-radius: 10px;
-      padding: 22px 28px;
+      padding: 14px 20px;
       text-align: center;
       background: #F4F7FA;
     }
     .credentials-box h3 {
       font-family: 'DM Serif Display', Georgia, serif;
-      font-size: 14pt;
+      font-size: 12pt;
       font-weight: 400;
       color: #1C2B3A;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
     }
     .cred-grid {
       display: flex;
@@ -288,7 +280,7 @@
       margin-bottom: 4px;
     }
     .cred-value {
-      font-size: 22pt;
+      font-size: 18pt;
       font-weight: 700;
       color: #1C2B3A;
       font-family: 'DM Serif Display', Georgia, serif;
@@ -304,7 +296,7 @@
     .divider {
       border: none;
       border-top: 1px solid #D0D7DE;
-      margin: 20px 0;
+      margin: 14px 0;
     }
   </style>
 </head>
@@ -413,9 +405,7 @@
 </div>
 
 <!-- TOESTEMMINGSVERKLARING -->
-<div class="page-break"></div>
-
-<div class="doc-header">
+<div class="doc-header" style="margin-top: 24px;">
   <h1>Toestemmingsverklaring</h1>
   <div class="subtitle">Kwaliteitsevaluatie van AI-gegenereerde Medische Educatie Podcasts</div>
 </div>
@@ -558,8 +548,8 @@
             orientation: 'portrait',
           },
           pagebreak: {
-            mode: ['css', 'legacy'],
-            before: '.page-break',
+            mode: ['avoid-all', 'css'],
+            avoid: ['.section', '.checkbox-item', '.sig-grid', '.credentials-box', '.contact-table', '.doc-header'],
           },
         })
         .from(element)
