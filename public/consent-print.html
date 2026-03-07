@@ -1,19 +1,13 @@
-<!-- Print-optimized consent document: informatiebrief + signed consent + credentials. -->
+<!-- Consent PDF generator: renders informatiebrief + signed consent + credentials as downloadable PDF. -->
 <!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vetrix — Informatiebrief & Toestemmingsverklaring</title>
+  <title>Vetrix — PDF wordt gegenereerd...</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
   <style>
-    /* Print-optimized styles — self-contained, no external dependencies except fonts */
-    @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
-
-    @page {
-      size: A4;
-      margin: 22mm 20mm 24mm 20mm;
-    }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
@@ -22,7 +16,64 @@
       line-height: 1.6;
       color: #1E2D3D;
       -webkit-font-smoothing: antialiased;
+      background: #EDF2F8;
+    }
+
+    /* --- Status bar (screen only, hidden in PDF) --- */
+    .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      text-align: center;
+      padding: 24px 20px;
+      background: linear-gradient(160deg, #1C2B3A 0%, #263A4D 50%, #2A6CB0 100%);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(28,43,58,0.25);
+    }
+    .status-bar .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-bar.done {
+      background: #25794A;
+    }
+    .status-bar.done .spinner { display: none; }
+    .status-bar.error { background: #C94D5A; }
+    .status-bar button {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 12px;
+      vertical-align: middle;
+    }
+    .status-bar button:hover { background: rgba(255,255,255,0.3); }
+
+    /* --- PDF content wrapper --- */
+    #pdfContent {
+      max-width: 210mm;
+      margin: 80px auto 40px;
       background: white;
+      padding: 40px 44px;
+      box-shadow: 0 4px 24px rgba(28,43,58,0.1);
+      border-radius: 4px;
     }
 
     /* --- Document header --- */
@@ -71,7 +122,6 @@
     /* --- Sections --- */
     .section {
       margin-bottom: 18px;
-      page-break-inside: avoid;
     }
     .section h2 {
       font-family: 'DM Serif Display', Georgia, serif;
@@ -125,24 +175,15 @@
       font-weight: 700;
     }
 
-    /* --- Page break before consent form --- */
-    .page-break { page-break-before: always; }
+    /* --- Page break hint for html2pdf --- */
+    .page-break {
+      page-break-before: always;
+      height: 0;
+      margin: 0;
+      border: none;
+    }
 
     /* --- Consent form --- */
-    .consent-title {
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-size: 16pt;
-      font-weight: 400;
-      color: #1C2B3A;
-      text-align: center;
-      margin-bottom: 4px;
-    }
-    .consent-subtitle {
-      font-size: 10pt;
-      color: #7A8D9E;
-      text-align: center;
-      margin-bottom: 16px;
-    }
     .consent-intro {
       font-size: 10.5pt;
       line-height: 1.65;
@@ -158,7 +199,7 @@
       font-size: 11pt;
     }
 
-    /* Checkboxes (print-friendly) */
+    /* Checkboxes */
     .checkbox-list { margin-bottom: 18px; }
     .checkbox-item {
       display: flex;
@@ -182,10 +223,7 @@
       justify-content: center;
       margin-top: 2px;
     }
-    .check-box svg {
-      width: 12px;
-      height: 12px;
-    }
+    .check-box svg { width: 12px; height: 12px; }
 
     /* Signature fields */
     .signature-section {
@@ -217,10 +255,9 @@
       min-height: 28px;
     }
 
-    /* --- Credentials section --- */
+    /* Credentials */
     .credentials-section {
       margin-top: 32px;
-      page-break-inside: avoid;
     }
     .credentials-box {
       border: 2px solid #1C2B3A;
@@ -241,9 +278,7 @@
       justify-content: center;
       gap: 40px;
     }
-    .cred-item {
-      text-align: center;
-    }
+    .cred-item { text-align: center; }
     .cred-label {
       font-size: 8pt;
       font-weight: 700;
@@ -266,51 +301,21 @@
       font-style: italic;
     }
 
-    /* --- Divider --- */
     .divider {
       border: none;
       border-top: 1px solid #D0D7DE;
       margin: 20px 0;
     }
-
-    /* --- Screen-only UI (hidden when printing) --- */
-    .screen-only {
-      text-align: center;
-      padding: 20px;
-      background: #EDF2F8;
-    }
-    .screen-only button {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #1C2B3A;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 32px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      margin: 0 8px;
-    }
-    .screen-only button:hover { background: #2A6CB0; }
-    .screen-only p {
-      font-size: 13px;
-      color: #7A8D9E;
-      margin-bottom: 12px;
-    }
-
-    @media print {
-      .screen-only { display: none; }
-      body { font-size: 10.5pt; }
-    }
   </style>
 </head>
 <body>
 
-<div class="screen-only" id="screenBar">
-  <p>Dit document is geoptimaliseerd voor afdrukken / opslaan als PDF.</p>
-  <button onclick="window.print()">Opslaan als PDF</button>
-  <button onclick="window.close()">Sluiten</button>
+<div class="status-bar" id="statusBar">
+  <span class="spinner"></span>
+  <span id="statusText">PDF wordt gegenereerd...</span>
 </div>
+
+<div id="pdfContent">
 
 <!-- INFORMATIEBRIEF -->
 <div class="doc-header">
@@ -407,7 +412,7 @@
   <p style="margin-top:10px;">Heeft u een klacht of bezwaar over dit onderzoek, dan kunt u contact opnemen met de hoofdonderzoeker via bovenstaande contactgegevens.</p>
 </div>
 
-<!-- TOESTEMMINGSVERKLARING (page break) -->
+<!-- TOESTEMMINGSVERKLARING -->
 <div class="page-break"></div>
 
 <div class="doc-header">
@@ -497,27 +502,76 @@
   </div>
 </div>
 
+</div><!-- /pdfContent -->
+
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    const statusBar = document.getElementById('statusBar');
+    const statusText = document.getElementById('statusText');
     const raw = sessionStorage.getItem('vetrix_registration');
+
     if (!raw) {
-      document.getElementById('screenBar').innerHTML =
-        '<p style="color:#C94D5A;font-weight:600;">Geen registratiegegevens gevonden. Ga terug naar de registratiepagina.</p>' +
-        '<button onclick="window.location.href=\'/consent\'">Naar aanmeldpagina</button>';
+      statusBar.className = 'status-bar error';
+      statusText.innerHTML = 'Geen registratiegegevens gevonden. <button onclick="window.location.href=\'/consent\'">Naar aanmeldpagina</button>';
       return;
     }
 
     const reg = JSON.parse(raw);
 
-    // Fill signature fields
+    // Fill dynamic fields
     document.getElementById('sigName').textContent = reg.name || '—';
     document.getElementById('sigRole').textContent = reg.role || '—';
     document.getElementById('sigDate').textContent = reg.consent_date || '—';
     document.getElementById('sigSignature').textContent = reg.name || '—';
-
-    // Fill credentials
     document.getElementById('credCode').textContent = reg.code || '—';
     document.getElementById('credPassword').textContent = reg.password || '—';
+
+    // Wait for fonts to load before generating PDF
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Fallback: wait 1 second if fonts.ready is not supported
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    // Small extra delay to ensure rendering is complete
+    await new Promise(r => setTimeout(r, 300));
+
+    // Generate PDF
+    const element = document.getElementById('pdfContent');
+    const filename = 'Vetrix_Informatiebrief_' + (reg.code || 'deelnemer') + '.pdf';
+
+    try {
+      await html2pdf()
+        .set({
+          margin: [15, 15, 18, 15],
+          filename: filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait',
+          },
+          pagebreak: {
+            mode: ['css', 'legacy'],
+            before: '.page-break',
+          },
+        })
+        .from(element)
+        .save();
+
+      statusBar.className = 'status-bar done';
+      statusText.innerHTML = 'PDF is gedownload! <button onclick="window.close()">Sluiten</button>';
+    } catch (err) {
+      statusBar.className = 'status-bar error';
+      statusText.innerHTML = 'Fout bij het genereren van de PDF. <button onclick="window.location.reload()">Opnieuw proberen</button>';
+      console.error('PDF generation error:', err);
+    }
   });
 </script>
 </body>
