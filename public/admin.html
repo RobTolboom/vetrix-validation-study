@@ -1,4 +1,4 @@
-<!-- Admin dashboard: shows study progress per episode and provides CSV export. Protected by HTTP Basic Auth. -->
+<!-- Admin dashboard: shows study progress per episode, participant overview, and CSV export. Protected by HTTP Basic Auth. -->
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -16,7 +16,27 @@
 </div>
 
 <div class="container">
-  <div class="meta-card">
+
+  <!-- Participants overview -->
+  <div class="meta-card fade-in">
+    <h2>Deelnemers</h2>
+    <p id="participantsText" style="font-size:14px;color:var(--muted);margin-bottom:16px;">Laden...</p>
+    <table class="admin-table" id="participantsTable">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Naam</th>
+          <th>Functie</th>
+          <th>Wachtwoord</th>
+          <th>Registratiedatum</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Episode progress -->
+  <div class="meta-card fade-in">
     <h2>Overzicht</h2>
     <p id="totalText" style="font-size:14px;color:var(--muted);margin-bottom:16px;">Laden...</p>
     <table class="admin-table" id="progressTable">

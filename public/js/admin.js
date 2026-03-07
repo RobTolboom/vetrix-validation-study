@@ -1,8 +1,9 @@
 /**
- * Admin dashboard script — displays study progress and provides CSV export.
+ * Admin dashboard script — displays study progress, participants, and CSV export.
  *
  * Fetches /api/admin/progress (Basic Auth protected) and renders:
  *   - Overall progress bar and text
+ *   - Participants table with codes, names, roles, passwords (MD5 slice), dates
  *   - Per-episode table with assigned/completed counts and rater codes
  *   - CSV export button (downloads /api/admin/export)
  *
@@ -37,6 +38,29 @@ async function loadProgress() {
     document.getElementById('totalText').textContent =
       `${data.totalCompleted} van ${data.totalTarget} beoordelingen voltooid (${pct}%)`;
 
+    // Populate participants table
+    const participantsTbody = document.querySelector('#participantsTable tbody');
+    participantsTbody.innerHTML = '';
+
+    if (data.participants && data.participants.length > 0) {
+      document.getElementById('participantsText').textContent =
+        `${data.participants.length} geregistreerde deelnemer(s)`;
+
+      for (const p of data.participants) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${p.code}</strong></td>
+          <td>${escapeHtml(p.name)}</td>
+          <td>${escapeHtml(p.role)}</td>
+          <td><code>${p.password}</code></td>
+          <td>${p.consent_date || '—'}</td>
+        `;
+        participantsTbody.appendChild(tr);
+      }
+    } else {
+      document.getElementById('participantsText').textContent = 'Nog geen deelnemers geregistreerd.';
+    }
+
     // Populate per-episode table rows
     const tbody = document.querySelector('#progressTable tbody');
     tbody.innerHTML = '';
@@ -45,7 +69,7 @@ async function loadProgress() {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${ep.episode}</strong></td>
-        <td>${ep.title}</td>
+        <td>${escapeHtml(ep.title)}</td>
         <td>${ep.assigned} / 5</td>
         <td>${ep.completed} / 5</td>
         <td>${ep.raters.length > 0 ? ep.raters.join(', ') : '<em style="color:var(--muted)">—</em>'}</td>
@@ -55,4 +79,11 @@ async function loadProgress() {
   } catch {
     document.getElementById('totalText').textContent = 'Kan gegevens niet laden.';
   }
+}
+
+/** Safely escape text for insertion into innerHTML. */
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }

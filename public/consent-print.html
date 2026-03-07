@@ -1,0 +1,576 @@
+<!-- Consent PDF generator: renders informatiebrief + signed consent + credentials as downloadable PDF. -->
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vetrix — PDF wordt gegenereerd...</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.2/html2pdf.bundle.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.5;
+      color: #1E2D3D;
+      -webkit-font-smoothing: antialiased;
+      background: #EDF2F8;
+    }
+
+    /* --- Status bar (screen only, hidden in PDF) --- */
+    .status-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      text-align: center;
+      padding: 24px 20px;
+      background: linear-gradient(160deg, #1C2B3A 0%, #263A4D 50%, #2A6CB0 100%);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      box-shadow: 0 4px 20px rgba(28,43,58,0.25);
+    }
+    .status-bar .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .status-bar.done {
+      background: #25794A;
+    }
+    .status-bar.done .spinner { display: none; }
+    .status-bar.error { background: #C94D5A; }
+    .status-bar button {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 12px;
+      vertical-align: middle;
+    }
+    .status-bar button:hover { background: rgba(255,255,255,0.3); }
+
+    /* --- PDF content wrapper --- */
+    #pdfContent {
+      max-width: 210mm;
+      margin: 80px auto 40px;
+      background: white;
+      padding: 28px 32px;
+      box-shadow: 0 4px 24px rgba(28,43,58,0.1);
+      border-radius: 4px;
+    }
+
+    /* --- Document header --- */
+    .doc-header {
+      text-align: center;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #1C2B3A;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 8px;
+      height: 8px;
+      background: #1C2B3A;
+    }
+    .doc-header h1 {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 15pt;
+      font-weight: 400;
+      color: #1C2B3A;
+      margin-bottom: 6px;
+    }
+    .doc-header .subtitle {
+      font-size: 9pt;
+      color: #7A8D9E;
+      line-height: 1.4;
+    }
+
+    /* --- WMO notice --- */
+    .notice {
+      border-left: 3px solid #2A6CB0;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      font-size: 9pt;
+      color: #1C2B3A;
+      font-style: italic;
+      line-height: 1.6;
+      background: #F4F7FA;
+    }
+
+    /* --- Sections --- */
+    .section {
+      margin-bottom: 10px;
+    }
+    .section.offset-top {
+      padding-top: 8px;
+    }
+    .section h2 {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 11pt;
+      font-weight: 400;
+      color: #1C2B3A;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      page-break-after: avoid;
+      break-after: avoid;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+    .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #1C2B3A;
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 8.5pt;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .section p {
+      margin-bottom: 5px;
+      line-height: 1.5;
+    }
+    .section p:last-child { margin-bottom: 0; }
+    .section ul, .section ol {
+      margin: 4px 0 4px 18px;
+      line-height: 1.5;
+    }
+    .section li { margin-bottom: 2px; }
+
+    /* Contact table */
+    .contact-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 9pt;
+    }
+    .contact-table td {
+      padding: 3px 8px;
+      border-bottom: 1px solid #E4EAF0;
+      vertical-align: top;
+    }
+    .contact-table td:first-child {
+      width: 130px;
+      font-weight: 700;
+    }
+
+    /* --- Page break --- */
+    .page-break-before {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    /* --- Consent form --- */
+    .consent-intro {
+      font-size: 9pt;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      background: #F4F7FA;
+      border: 1px solid #E4EAF0;
+      border-radius: 6px;
+    }
+    .consent-agree {
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 9.5pt;
+    }
+
+    /* Checkboxes */
+    .checkbox-list { margin-bottom: 12px; }
+    .checkbox-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid #E4EAF0;
+      font-size: 9pt;
+      line-height: 1.45;
+    }
+    .checkbox-item:last-child { border-bottom: none; }
+    .check-box {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #1E6B3E;
+      border-radius: 3px;
+      background: #25794A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+    .check-box::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    /* Signature fields */
+    .signature-section {
+      margin-top: 16px;
+      border-top: 2px solid #1C2B3A;
+      padding-top: 12px;
+    }
+    .sig-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 10px;
+    }
+    .sig-field label {
+      display: block;
+      font-size: 9pt;
+      font-weight: 700;
+      color: #7A8D9E;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .sig-field .sig-value {
+      font-size: 12pt;
+      font-weight: 600;
+      color: #1C2B3A;
+      padding: 6px 0;
+      border-bottom: 1px solid #D0D7DE;
+      min-height: 28px;
+    }
+
+    /* Credentials */
+    .credentials-section {
+      margin-top: 20px;
+    }
+    .credentials-box {
+      border: 2px solid #1C2B3A;
+      border-radius: 10px;
+      padding: 14px 20px;
+      text-align: center;
+      background: #F4F7FA;
+    }
+    .credentials-box h3 {
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 12pt;
+      font-weight: 400;
+      color: #1C2B3A;
+      margin-bottom: 10px;
+    }
+    .cred-grid {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+    .cred-item { text-align: center; }
+    .cred-label {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #7A8D9E;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+    .cred-value {
+      font-size: 18pt;
+      font-weight: 700;
+      color: #1C2B3A;
+      font-family: 'DM Serif Display', Georgia, serif;
+      letter-spacing: 0.04em;
+    }
+    .credentials-note {
+      margin-top: 12px;
+      font-size: 9pt;
+      color: #7A8D9E;
+      font-style: italic;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #D0D7DE;
+      margin: 14px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="status-bar" id="statusBar">
+  <span class="spinner"></span>
+  <span id="statusText">PDF wordt gegenereerd...</span>
+</div>
+
+<div id="pdfContent">
+
+<!-- INFORMATIEBRIEF -->
+<div class="doc-header">
+  <h1>Informatiebrief voor Onderzoeksdeelnemers</h1>
+  <div class="subtitle">Kwaliteitsevaluatie van AI-gegenereerde Medische Educatie Podcasts<br>
+  Afdeling Anesthesiologie | Versie 1.0 | 7 maart 2026</div>
+</div>
+
+<div class="notice">
+  Dit onderzoek valt buiten de reikwijdte van de Wet Medisch-wetenschappelijk Onderzoek met mensen (WMO). Een niet-WMO verklaring is aangevraagd bij de Medisch Ethische Toetsingscommissie (METC) van het UMCG. Deelname is volledig vrijwillig.
+</div>
+
+<div class="section">
+  <h2><span class="section-num">1</span> Inleiding</h2>
+  <p>Geachte collega,</p>
+  <p>Wij vragen u vriendelijk om deel te nemen aan een onderzoek. Meedoen is vrijwillig. Om mee te doen is wel uw toestemming nodig. Lees deze informatiebrief zorgvuldig door voordat u beslist of u wilt deelnemen. Neem gerust de tijd om de brief te bespreken met anderen. Als iets niet duidelijk is, kunt u vragen stellen via de contactgegevens aan het einde van deze brief.</p>
+</div>
+
+<div class="section">
+  <h2><span class="section-num">2</span> Doel van het onderzoek</h2>
+  <p>Binnen de afdeling Anesthesiologie is een systeem ontwikkeld dat wetenschappelijke artikelen automatisch omzet naar gesproken podcast-afleveringen van circa 10 minuten. Het doel van dit onderzoek is om de kwaliteit van deze door kunstmatige intelligentie (AI) gegenereerde podcast-afleveringen systematisch te beoordelen.</p>
+  <p>Concreet willen we weten:</p>
+  <ul>
+    <li>Is de medische inhoud van de afleveringen accuraat en in overeenstemming met het bijbehorende wetenschappelijke artikel?</li>
+    <li>Zijn de afleveringen klinisch relevant en volledig?</li>
+    <li>Is de presentatiekwaliteit (geluid, structuur, toon) voldoende?</li>
+  </ul>
+  <p>De resultaten worden gebruikt voor kwaliteitsverbetering van het systeem en voor wetenschappelijke publicatie.</p>
+</div>
+
+<div class="section">
+  <h2><span class="section-num">3</span> Achtergrond</h2>
+  <p>De groeiende hoeveelheid medische literatuur maakt het steeds uitdagender om als specialist actuele kennis bij te houden. AI-technologie biedt de mogelijkheid om wetenschappelijke artikelen om te zetten naar goed beluisterbare samenvattingen. Voordat dit systeem breder wordt ingezet, is het van belang de kwaliteit te toetsen door vakinhoudelijke experts — uw expertise als anesthesioloog of AIOS is hiervoor onmisbaar.</p>
+</div>
+
+<div class="section offset-top">
+  <h2><span class="section-num">4</span> Wat deelname inhoudt</h2>
+  <p>Als u deelneemt, vragen we u om een of meerdere podcast-afleveringen te beoordelen. Per aflevering verloopt de procedure als volgt:</p>
+  <ol>
+    <li>U ontvangt een persoonlijke beoordelaarscode waarmee u toegang krijgt tot het digitale evaluatieplatform.</li>
+    <li>U beluistert een podcast-aflevering van circa 10 minuten en beoordeelt direct daarna de presentatiekwaliteit.</li>
+    <li>U leest het bijbehorende wetenschappelijke artikel (PDF).</li>
+    <li>U leest het transcript van de aflevering en beoordeelt per alinea de medische juistheid.</li>
+    <li>U geeft een eindoordeel over de klinische relevantie en volledigheid van de aflevering.</li>
+  </ol>
+  <p>De geschatte tijdsinvestering bedraagt <strong>30 tot 45 minuten per aflevering</strong>. U kunt meerdere afleveringen beoordelen, maar elke aflevering slechts eenmaal. Deelname is volledig digitaal en kan op een moment dat u uitkomt.</p>
+</div>
+
+<div class="section">
+  <h2><span class="section-num">5</span> Risico's en bezwaren</h2>
+  <p>Deelname aan dit onderzoek brengt geen gezondheidsrisico's met zich mee. De enige belasting is de tijdsinvestering van 30 tot 45 minuten per beoordeelde aflevering. Er worden geen patiëntgegevens verwerkt en er worden geen medische handelingen verricht.</p>
+</div>
+
+<div class="section">
+  <h2><span class="section-num">6</span> Mogelijke voordelen</h2>
+  <p>Er is geen directe persoonlijke beloning voor deelname. Door deel te nemen draagt u bij aan de kwaliteitsborging van een nieuw educatief hulpmiddel voor het vakgebied anesthesiologie. Deelnemers die een substantiële bijdrage leveren aan het onderzoek en voldoen aan de auteurschapscriteria van de International Committee of Medical Journal Editors (ICMJE) zullen de mogelijkheid tot co-auteurschap van de wetenschappelijke publicatie worden aangeboden.</p>
+</div>
+
+<div class="section">
+  <h2><span class="section-num">7</span> Vertrouwelijkheid van uw gegevens</h2>
+  <p>Uw gegevens worden vertrouwelijk en conform de Algemene Verordening Gegevensbescherming (AVG) verwerkt. Hierbij geldt het volgende:</p>
+  <ul>
+    <li>Uw beoordelingsgegevens worden opgeslagen onder een persoonlijke beoordelaarscode. Uw naam is niet zichtbaar in de onderzoeksdata.</li>
+    <li>De koppeling tussen uw naam en beoordelaarscode wordt bewaard op een beveiligde, niet-openbaar toegankelijke locatie, alleen toegankelijk voor de hoofdonderzoeker.</li>
+    <li>In wetenschappelijke publicaties en presentaties worden uitsluitend geaggregeerde, niet tot individuen herleidbare resultaten gerapporteerd.</li>
+    <li>Uw gegevens worden minimaal 10 jaar na publicatie bewaard conform de FAIR-principes voor wetenschappelijke data.</li>
+    <li>Uw gegevens worden niet gedeeld met derden buiten het onderzoeksteam, tenzij u hiervoor apart toestemming geeft.</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2><span class="section-num">8</span> Vrijwillige deelname</h2>
+  <p>Deelname aan dit onderzoek is volledig vrijwillig. U kunt op elk moment, zonder opgave van reden en zonder negatieve consequenties, stoppen met deelname. Als u stopt, worden reeds ingevulde en ingediende beoordelingen bewaard tenzij u verzoekt deze te verwijderen. Reeds verwijderde gegevens kunnen echter niet worden teruggeplaatst.</p>
+  <p>Als u besluit niet deel te nemen of tussentijds stopt, heeft dit geen enkele invloed op uw werkrelatie of uw professionele positie binnen de afdeling.</p>
+</div>
+
+<div class="section offset-top">
+  <h2><span class="section-num">9</span> Wettelijk kader</h2>
+  <p>Dit onderzoek valt buiten de reikwijdte van de Wet Medisch-wetenschappelijk Onderzoek met mensen (WMO) omdat er geen sprake is van medisch-wetenschappelijk onderzoek waarbij u wordt onderworpen aan handelingen of waarbij u een gedragswijziging wordt opgelegd. U treedt op als professionele beoordelaar van educatief materiaal in uw hoedanigheid als vakinhoudelijk expert.</p>
+  <p>Een niet-WMO verklaring is aangevraagd bij de METC van het UMCG. Het onderzoek wordt uitgevoerd conform de principes van de Verklaring van Helsinki en de AVG.</p>
+</div>
+
+<div class="section">
+  <h2><span class="section-num">10</span> Vragen en contactgegevens</h2>
+  <p>Heeft u vragen over dit onderzoek, dan kunt u contact opnemen met de hoofdonderzoeker:</p>
+  <table class="contact-table">
+    <tr><td>Naam</td><td>Dr. R.C. Tolboom</td></tr>
+    <tr><td>Functie</td><td>Kinderanesthesioloog</td></tr>
+    <tr><td>Instelling</td><td>UMCG</td></tr>
+    <tr><td>E-mailadres</td><td>R.C.Tolboom@umcg.nl</td></tr>
+    <tr><td>Telefoonnummer</td><td>62482</td></tr>
+  </table>
+  <p style="margin-top:10px;">Heeft u een klacht of bezwaar over dit onderzoek, dan kunt u contact opnemen met de hoofdonderzoeker via bovenstaande contactgegevens.</p>
+</div>
+
+<!-- TOESTEMMINGSVERKLARING -->
+<div class="doc-header page-break-before">
+  <h1>Toestemmingsverklaring</h1>
+  <div class="subtitle">Kwaliteitsevaluatie van AI-gegenereerde Medische Educatie Podcasts</div>
+</div>
+
+<div class="consent-intro">
+  Ik verklaar dat ik de informatiebrief voor bovengenoemd onderzoek heb gelezen en begrepen. Ik heb vragen kunnen stellen en ben voldoende geïnformeerd. Ik neem vrijwillig deel aan dit onderzoek en weet dat ik me op elk moment kan terugtrekken.
+</div>
+
+<p class="consent-agree"><strong>Ik ga akkoord met de volgende punten:</strong></p>
+
+<div class="checkbox-list">
+  <div class="checkbox-item">
+    <div class="check-box"></div>
+    <span>Ik heb de informatiebrief gelezen en begrepen. Ik heb vragen kunnen stellen.</span>
+  </div>
+  <div class="checkbox-item">
+    <div class="check-box"></div>
+    <span>Ik doe vrijwillig mee en weet dat ik mij op elk moment zonder opgave van reden kan terugtrekken.</span>
+  </div>
+  <div class="checkbox-item">
+    <div class="check-box"></div>
+    <span>Ik geef toestemming om mijn beoordelingen onder een persoonlijke code te verwerken, conform de AVG.</span>
+  </div>
+  <div class="checkbox-item">
+    <div class="check-box"></div>
+    <span>Ik begrijp dat geaggregeerde resultaten wetenschappelijk gepubliceerd kunnen worden en dat ik daarin niet identificeerbaar ben.</span>
+  </div>
+  <div class="checkbox-item">
+    <div class="check-box"></div>
+    <span>Ik geef toestemming om mijn gegevens minimaal 10 jaar na publicatie te bewaren.</span>
+  </div>
+</div>
+
+<div class="signature-section">
+  <div class="sig-grid">
+    <div class="sig-field">
+      <label>Naam deelnemer</label>
+      <div class="sig-value" id="sigName">—</div>
+    </div>
+    <div class="sig-field">
+      <label>Functie</label>
+      <div class="sig-value" id="sigRole">—</div>
+    </div>
+  </div>
+  <div class="sig-grid">
+    <div class="sig-field">
+      <label>Datum</label>
+      <div class="sig-value" id="sigDate">—</div>
+    </div>
+    <div class="sig-field">
+      <label>Digitale ondertekening</label>
+      <div class="sig-value" id="sigSignature">—</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider">
+
+<!-- INLOGGEGEVENS -->
+<div class="credentials-section">
+  <div class="credentials-box">
+    <h3>Uw inloggegevens</h3>
+    <div class="cred-grid">
+      <div class="cred-item">
+        <div class="cred-label">Beoordelaarscode</div>
+        <div class="cred-value" id="credCode">—</div>
+      </div>
+      <div class="cred-item">
+        <div class="cred-label">Wachtwoord</div>
+        <div class="cred-value" id="credPassword">—</div>
+      </div>
+    </div>
+    <p class="credentials-note">Bewaar deze gegevens zorgvuldig. U heeft deze nodig om in te loggen op het evaluatieplatform.</p>
+  </div>
+</div>
+
+</div><!-- /pdfContent -->
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const statusBar = document.getElementById('statusBar');
+    const statusText = document.getElementById('statusText');
+    const raw = sessionStorage.getItem('vetrix_registration');
+
+    if (!raw) {
+      statusBar.className = 'status-bar error';
+      statusText.innerHTML = 'Geen registratiegegevens gevonden. <button onclick="window.location.href=\'/consent\'">Naar aanmeldpagina</button>';
+      return;
+    }
+
+    const reg = JSON.parse(raw);
+
+    // Fill dynamic fields
+    document.getElementById('sigName').textContent = reg.name || '—';
+    document.getElementById('sigRole').textContent = reg.role || '—';
+    document.getElementById('sigDate').textContent = reg.consent_date || '—';
+    document.getElementById('sigSignature').textContent = reg.name || '—';
+    document.getElementById('credCode').textContent = reg.code || '—';
+    document.getElementById('credPassword').textContent = reg.password || '—';
+
+    // Wait for fonts to load before generating PDF
+    try {
+      await document.fonts.ready;
+    } catch {
+      // Fallback: wait 1 second if fonts.ready is not supported
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    // Small extra delay to ensure rendering is complete
+    await new Promise(r => setTimeout(r, 300));
+
+    // Generate PDF
+    const element = document.getElementById('pdfContent');
+    const filename = 'Vetrix_Informatiebrief_' + (reg.code || 'deelnemer') + '.pdf';
+
+    try {
+      await html2pdf()
+        .set({
+          margin: [15, 15, 18, 15],
+          filename: filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            letterRendering: true,
+          },
+          jsPDF: {
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'portrait',
+          },
+          pagebreak: {
+            mode: ['avoid-all', 'css'],
+            avoid: ['.section', '.section h2', '.checkbox-item', '.sig-grid', '.credentials-box', '.contact-table', '.doc-header'],
+          },
+        })
+        .from(element)
+        .save();
+
+      statusBar.className = 'status-bar done';
+      statusText.innerHTML = 'PDF is gedownload! <button onclick="window.close()">Sluiten</button>';
+    } catch (err) {
+      statusBar.className = 'status-bar error';
+      statusText.innerHTML = 'Fout bij het genereren van de PDF. <button onclick="window.location.reload()">Opnieuw proberen</button>';
+      console.error('PDF generation error:', err);
+    }
+  });
+</script>
+</body>
+</html>
