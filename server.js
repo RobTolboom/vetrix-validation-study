@@ -13,16 +13,20 @@
 
 const express = require('express');
 const path = require('path');
-const fs = require('fs');
 const { getEpisodes, getTranscript, getEpisodePath } = require('./lib/episodes');
 const { read, writeAtomic, withLock, getAssignedRaters, cleanupStaleAssignments } = require('./lib/submissions');
 const { validateSubmission } = require('./lib/validation');
 const { responsesToCsv } = require('./lib/csv-export');
-const { registerParticipant, findParticipant, verifyPassword, derivePassword } = require('./lib/participants');
+const { registerParticipant, findParticipant, verifyPassword } = require('./lib/participants');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD?.trim();
+
+if (!ADMIN_PASSWORD) {
+  console.error('ADMIN_PASSWORD missing. Set a strong ADMIN_PASSWORD environment variable before starting the server.');
+  process.exit(1);
+}
 
 app.use(express.json());
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
@@ -194,8 +198,12 @@ app.post('/api/assign', async (req, res) => {
 
 app.post('/api/submit', async (req, res) => {
   const body = req.body;
+  const normalizedBody = {
+    ...body,
+    rater: typeof body?.rater === 'string' ? body.rater.trim() : body?.rater,
+  };
   const episodes = getEpisodes();
-  const errors = validateSubmission(body, episodes);
+  const errors = validateSubmission(normalizedBody, episodes);
 
   if (errors.length > 0) {
     return res.status(400).json({ errors });
@@ -204,10 +212,24 @@ app.post('/api/submit', async (req, res) => {
   try {
     await withLock(() => {
       const data = read();
+      const participant = (data.participants || []).find(p => p.code === normalizedBody.rater);
+
+      if (!participant) {
+        throw { status: 403, message: 'Onbekende beoordelaarscode.' };
+      }
+
+      if (participant.role !== normalizedBody.role) {
+        throw { status: 400, message: 'Functie komt niet overeen met geregistreerde deelnemer.' };
+      }
+
+      const assignedRaters = getAssignedRaters(data.assignments, normalizedBody.episode);
+      if (!assignedRaters.includes(normalizedBody.rater)) {
+        throw { status: 403, message: 'Deze aflevering is niet aan uw beoordelaarscode toegewezen.' };
+      }
 
       // Prevent duplicate submissions for the same episode + rater combination
       const duplicate = data.responses.find(
-        r => r.episode === body.episode && r.rater === body.rater
+        r => r.episode === normalizedBody.episode && r.rater === normalizedBody.rater
       );
       if (duplicate) {
         throw { status: 409, message: 'U heeft deze aflevering al beoordeeld.' };
@@ -215,19 +237,19 @@ app.post('/api/submit', async (req, res) => {
 
       // Build response record with sanitized B entries
       const response = {
-        episode: body.episode,
-        rater: body.rater,
-        role: body.role,
-        date: body.date,
+        episode: normalizedBody.episode,
+        rater: normalizedBody.rater,
+        role: participant.role,
+        date: normalizedBody.date,
         submitted_at: new Date().toISOString(),
-        A: body.A,
-        B: body.B.map(b => ({
+        A: normalizedBody.A,
+        B: normalizedBody.B.map(b => ({
           paragraph: b.paragraph,
           score: b.nvt ? null : b.score,
           note: b.note || '',
           ...(b.nvt ? { nvt: true } : {}),
         })),
-        C: body.C,
+        C: normalizedBody.C,
       };
 
       data.responses.push(response);
@@ -285,12 +307,11 @@ app.get('/api/admin/progress', adminAuth, (_req, res) => {
   const totalCompleted = data.responses.length;
   const totalTarget = episodes.length * 5;
 
-  // Include participants with derived passwords for admin overview
+  // Include participants without exposing derived passwords
   const participants = (data.participants || []).map(p => ({
     code: p.code,
     name: p.name,
     role: p.role,
-    password: derivePassword(p.code),
     consent_date: p.consent_date,
     registered_at: p.registered_at,
   }));
@@ -320,9 +341,15 @@ if (episodeCount === 0) {
 app.listen(PORT, () => {
   console.log(`Vetrix Validation Webapp running on port ${PORT}`);
   console.log(`Episodes available: ${episodeCount}`);
-  console.log(`Admin password: ${ADMIN_PASSWORD === 'admin' ? '!! Using default (set ADMIN_PASSWORD env var)' : 'Custom password set'}`);
+  console.log('Admin password: configured via ADMIN_PASSWORD env var');
 
   // Cleanup stale assignments (no response after 24h) — run on start and every hour
-  cleanupStaleAssignments();
-  setInterval(() => cleanupStaleAssignments(), 60 * 60 * 1000);
+  cleanupStaleAssignments().catch(err => {
+    console.error('Cleanup error:', err);
+  });
+  setInterval(() => {
+    cleanupStaleAssignments().catch(err => {
+      console.error('Cleanup error:', err);
+    });
+  }, 60 * 60 * 1000);
 });

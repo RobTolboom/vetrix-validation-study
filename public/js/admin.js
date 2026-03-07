@@ -3,7 +3,7 @@
  *
  * Fetches /api/admin/progress (Basic Auth protected) and renders:
  *   - Overall progress bar and text
- *   - Participants table with codes, names, roles, passwords (MD5 slice), dates
+ *   - Participants table with codes, names, roles, and dates
  *   - Per-episode table with assigned/completed counts and rater codes
  *   - CSV export button (downloads /api/admin/export)
  *
@@ -52,7 +52,6 @@ async function loadProgress() {
           <td><strong>${p.code}</strong></td>
           <td>${escapeHtml(p.name)}</td>
           <td>${escapeHtml(p.role)}</td>
-          <td><code>${p.password}</code></td>
           <td>${p.consent_date || '—'}</td>
         `;
         participantsTbody.appendChild(tr);

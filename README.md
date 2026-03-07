@@ -2,6 +2,8 @@
 
 A web application for the **Vetrix Anesthesiology** validation study. Anaesthesiologists and residents evaluate AI-generated podcast episodes on presentation quality, content accuracy, and clinical relevance.
 
+> This release is intended for internal deployment within a controlled study environment. It is not designed or hardened for public internet exposure.
+
 ## Study Design
 
 - **10 podcast episodes**, each based on a published anaesthesiology article
@@ -96,7 +98,7 @@ Each episode is assigned to a maximum of 5 raters. Episodes are distributed even
 
 Navigate to `/admin` and log in with the configured password. The dashboard shows:
 
-- **Participants**: all registered raters with code, name, role, password, and registration date
+- **Participants**: all registered raters with code, name, role, and registration date
 - **Progress**: per-episode assignment/completion counts with rater codes
 - **CSV export**: download all responses
 
@@ -151,7 +153,7 @@ Webapp/
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3000` | Server port |
-| `ADMIN_PASSWORD` | `admin` | Password for the admin dashboard (Basic Auth) |
+| `ADMIN_PASSWORD` | — (required) | Password for the admin dashboard (Basic Auth) |
 
 ## Concurrency & Data Safety
 
