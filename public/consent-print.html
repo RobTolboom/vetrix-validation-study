@@ -132,6 +132,10 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      page-break-after: avoid;
+      break-after: avoid;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
     .section-num {
       display: inline-flex;
@@ -173,6 +177,12 @@
     .contact-table td:first-child {
       width: 130px;
       font-weight: 700;
+    }
+
+    /* --- Page break --- */
+    .page-break-before {
+      page-break-before: always;
+      break-before: page;
     }
 
     /* --- Consent form --- */
@@ -405,7 +415,7 @@
 </div>
 
 <!-- TOESTEMMINGSVERKLARING -->
-<div class="doc-header" style="margin-top: 24px;">
+<div class="doc-header page-break-before">
   <h1>Toestemmingsverklaring</h1>
   <div class="subtitle">Kwaliteitsevaluatie van AI-gegenereerde Medische Educatie Podcasts</div>
 </div>
@@ -549,7 +559,7 @@
           },
           pagebreak: {
             mode: ['avoid-all', 'css'],
-            avoid: ['.section', '.checkbox-item', '.sig-grid', '.credentials-box', '.contact-table', '.doc-header'],
+            avoid: ['.section', '.section h2', '.checkbox-item', '.sig-grid', '.credentials-box', '.contact-table', '.doc-header'],
           },
         })
         .from(element)
