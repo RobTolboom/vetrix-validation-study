@@ -4,7 +4,6 @@
 #   - data/ is mounted read-write (submissions.json is written here)
 # Set ADMIN_PASSWORD in .env (see .env.example)
 
-version: "3.8"
 services:
   vetrix-webapp:
     build: .

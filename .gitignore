@@ -2,29 +2,6 @@
 node_modules/
 npm-debug.log*
 
-# ---- Python basics ----
-__pycache__/
-*.py[cod]
-*$py.class
-
-# ---- Build artifacts ----
-*.egg-info/
-dist/
-build/
-*.egg
-
-# ---- Virtual environments ----
-.venv/
-venv/
-ENV/
-env/
-env.bak/
-.python-version
-
-# ---- Direnv ----
-.envrc
-.direnv/
-
 # ---- Environment variables ----
 .env
 .env.*
@@ -44,26 +21,13 @@ episodes/EP-*/*
 out/
 *.log
 
-# ---- Coverage reports ----
-.coverage
-.coverage.*
-htmlcov/
-coverage.xml
-*.cover
-
-# ---- Jupyter / notebooks ----
-.ipynb_checkpoints/
-*.ipynb
-
 # ---- macOS ----
 .DS_Store
 
 # ---- Internal docs / plans ----
 docs/
 
-# ---- personal dev notes ----
+# ---- Personal dev notes ----
 aantekeningen.txt
 todo.txt
-test.py
-work-in-progress/test*
 tmp/*
